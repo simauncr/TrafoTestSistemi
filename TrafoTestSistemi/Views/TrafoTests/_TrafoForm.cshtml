@@ -114,11 +114,45 @@
                 <td><input asp-for="GerilimYG" class="form-control numeric-input" required /></td>
                 <td><input asp-for="GerilimAG" class="form-control numeric-input" required /></td>
                 <td><input asp-for="BaglantiGrubu" class="form-control" required /></td>
-                <td><input asp-for="CekirdekTipi" class="form-control" required /></td>
-                <td><input asp-for="SacCinsi" class="form-control" required /></td>
-                <td><input asp-for="KazanCinsi" class="form-control" required /></td>
-                <td><input asp-for="YagCinsi" class="form-control" required /></td>
-                <td><input asp-for="Frekans" class="form-control numeric-input" required /></td>
+                <td>
+                    <select asp-for="CekirdekTipi" class="form-control" required>
+                        <option value="">-- Seçiniz --</option>
+                        <option value="Yuvarlak">Yuvarlak</option>
+                        <option value="Oval">Oval</option>
+                    </select>
+                </td>
+                <td>
+                    <select asp-for="SacCinsi" class="form-control" required>
+                        <option value="">-- Seçiniz --</option>
+                        <option value="M070-23P">M070-23P</option>
+                        <option value="M075-23P">M075-23P</option>
+                        <option value="M080-23P">M080-23P</option>
+                        <option value="M085-23P">M085-23P</option>
+                        <option value="M130">M130</option>
+                    </select>
+                </td>
+                <td>
+                    <select asp-for="KazanCinsi" class="form-control" required>
+                        <option value="">-- Seçiniz --</option>
+                        <option value="Dalga Duvar">Dalga Duvar</option>
+                        <option value="Düz Duvar">Düz Duvar</option>
+                    </select>
+                </td>
+                <td>
+                    <select asp-for="YagCinsi" class="form-control" required>
+                        <option value="">-- Seçiniz --</option>
+                        <option value="Mineral">Mineral</option>
+                        <option value="Midel">Midel</option>
+                        <option value="FR3">FR3</option>
+                        <option value="Silikon">Silikon</option>
+                    </select>
+                </td>
+                <td>
+                    <select id="FrekansSelect" class="form-control">
+                        <option value="50">50</option>
+                        <option value="60">60</option>
+                    </select>
+                </td>
             </tr>
         </tbody>
     </table>
