@@ -48,16 +48,20 @@ namespace TrafoTestSistemi.Models
         public int Frekans { get; set; } = 50;
 
         [Required]
-        public string? CekirdekTipi { get; set; }
+        public int CekirdekTipiId { get; set; }
+        public CekirdekTipi? CekirdekTipi { get; set; }
 
         [Required]
-        public string? SacCinsi { get; set; }
+        public int SacCinsiId { get; set; }
+        public SacCinsi? SacCinsi { get; set; }
 
         [Required]
-        public string? KazanCinsi { get; set; }
+        public int KazanCinsiId { get; set; }
+        public KazanCinsi? KazanCinsi { get; set; }
 
         [Required]
-        public string? YagCinsi { get; set; }
+        public int YagCinsiId { get; set; }
+        public YagCinsi? YagCinsi { get; set; }
 
         public double AG_IcCap_K_Hesap { get; set; }
         public double AG_IcCap_U_Hesap { get; set; }

@@ -105,6 +105,7 @@ namespace TrafoTestSistemi.Controllers
 
         public IActionResult Create()
         {
+            YukleSelectListler();
             return View();
         }
 
@@ -119,6 +120,7 @@ namespace TrafoTestSistemi.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            YukleSelectListler();
             return View(trafoTest);
         }
 
@@ -127,6 +129,7 @@ namespace TrafoTestSistemi.Controllers
             if (id == null) return NotFound();
             var trafo = await _context.TestKayitlari.FindAsync(id);
             if (trafo == null) return NotFound();
+            YukleSelectListler();
             return View(trafo);
         }
 
@@ -150,6 +153,7 @@ namespace TrafoTestSistemi.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            YukleSelectListler();
             return View(trafoTest);
         }
 
@@ -199,6 +203,15 @@ namespace TrafoTestSistemi.Controllers
                 .OrderByDescending(x => x.Id)
                 .ToListAsync();
             return Json(new { data = veriler });
+        }
+
+        private void YukleSelectListler()
+        {
+            ViewBag.CekirdekTipleri = _context.CekirdekTipleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
+            ViewBag.SacCinsleri = _context.SacCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
+            ViewBag.KazanCinsleri = _context.KazanCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
+            ViewBag.YagCinsleri = _context.YagCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
+            ViewBag.MuhendisListesi = _context.Kullanicilar.OrderBy(x => x.AdSoyad).Select(x => x.AdSoyad).ToList();
         }
     }
 } 

@@ -21,12 +21,11 @@ namespace TrafoTestSistemi.Controllers
         [HttpPost]
         public IActionResult Login(string username, string password)
         {
-            var user = _context.Users.FirstOrDefault(x => x.Username == username && x.Password == password);
+            var user = _context.Kullanicilar.FirstOrDefault(x => x.KullaniciAdi == username && x.Sifre == password);
 
             if (user != null)
             {
-                HttpContext.Session.SetString("User", user.NameSurname);
-
+                HttpContext.Session.SetString("User", user.AdSoyad);
                 return RedirectToAction("Index", "TrafoTests");
             }
 

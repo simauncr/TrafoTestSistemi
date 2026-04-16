@@ -1,5 +1,15 @@
 ﻿@model TrafoTestSistemi.Models.TrafoTest
 
+<datalist id="muh-list">
+    @if (ViewBag.MuhendisListesi != null)
+    {
+        foreach (var ad in ViewBag.MuhendisListesi)
+        {
+            <option value="@ad"></option>
+        }
+    }
+</datalist>
+
 <style>
     .required-label::after {
         content: " *";
@@ -83,8 +93,12 @@
                 <td><input asp-for="TasarimNo" class="form-control" required /></td>
                 <td><input asp-for="Musteri" class="form-control" required /></td>
                 <td><input asp-for="DizaynId" class="form-control" /></td>
-                <td><input asp-for="ElektrikMuhendisi" class="form-control" required /></td>
-                <td><input asp-for="MekanikMuhendisi" class="form-control" required /></td>
+                <td>
+                    <input asp-for="ElektrikMuhendisi" class="form-control" list="muh-list" autocomplete="off" required />
+                </td>
+                <td>
+                    <input asp-for="MekanikMuhendisi" class="form-control" list="muh-list" autocomplete="off" required />
+                </td>
                 <td><input asp-for="DizaynTarihi" type="date" class="form-control" required /></td>
                 <td><input asp-for="TestTarihi" type="date" class="form-control" required /></td>
             </tr>
@@ -115,36 +129,23 @@
                 <td><input asp-for="GerilimAG" class="form-control numeric-input" required /></td>
                 <td><input asp-for="BaglantiGrubu" class="form-control" required /></td>
                 <td>
-                    <select asp-for="CekirdekTipi" class="form-control" required>
+                    <select asp-for="CekirdekTipiId" asp-items="ViewBag.CekirdekTipleri" class="form-control" required>
                         <option value="">-- Seçiniz --</option>
-                        <option value="Yuvarlak">Yuvarlak</option>
-                        <option value="Oval">Oval</option>
                     </select>
                 </td>
                 <td>
-                    <select asp-for="SacCinsi" class="form-control" required>
+                    <select asp-for="SacCinsiId" asp-items="ViewBag.SacCinsleri" class="form-control" required>
                         <option value="">-- Seçiniz --</option>
-                        <option value="M070-23P">M070-23P</option>
-                        <option value="M075-23P">M075-23P</option>
-                        <option value="M080-23P">M080-23P</option>
-                        <option value="M085-23P">M085-23P</option>
-                        <option value="M130">M130</option>
                     </select>
                 </td>
                 <td>
-                    <select asp-for="KazanCinsi" class="form-control" required>
+                    <select asp-for="KazanCinsiId" asp-items="ViewBag.KazanCinsleri" class="form-control" required>
                         <option value="">-- Seçiniz --</option>
-                        <option value="Dalga Duvar">Dalga Duvar</option>
-                        <option value="Düz Duvar">Düz Duvar</option>
                     </select>
                 </td>
                 <td>
-                    <select asp-for="YagCinsi" class="form-control" required>
+                    <select asp-for="YagCinsiId" asp-items="ViewBag.YagCinsleri" class="form-control" required>
                         <option value="">-- Seçiniz --</option>
-                        <option value="Mineral">Mineral</option>
-                        <option value="Midel">Midel</option>
-                        <option value="FR3">FR3</option>
-                        <option value="Silikon">Silikon</option>
                     </select>
                 </td>
                 <td>
@@ -160,74 +161,74 @@
 
 <div class="section-title">3. Sargı Geometrisi</div>
 <div class="table-responsive mb-custom">
-    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
+    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0" id="sargiTable">
         <thead class="table-light">
             <tr>
                 <th rowspan="3" class="align-middle">Bölüm</th>
-                <th colspan="4">Hesap (mm)</th>
-                <th colspan="4">Test (mm)</th>
-                <th colspan="6">Sapma Değerleri (mm)</th>
+                <th data-colspan-oval="4" data-colspan-yuvarlak="2" colspan="4">Hesap (mm)</th>
+                <th data-colspan-oval="4" data-colspan-yuvarlak="2" colspan="4">Test (mm)</th>
+                <th data-colspan-oval="6" data-colspan-yuvarlak="3" colspan="6">Sapma Değerleri (mm)</th>
             </tr>
             <tr>
-                <th colspan="2">İç Çap</th>
-                <th colspan="2">Dış Çap</th>
-                <th colspan="2">İç Çap</th>
-                <th colspan="2">Dış Çap</th>
-                <th colspan="2">İç Çap</th>
-                <th colspan="2" class="align-middle bg-warning bg-opacity-10">Radyal</th>
-                <th colspan="2">Dış Çap</th>
+                <th data-colspan-oval="2" data-colspan-yuvarlak="1" colspan="2">İç Çap</th>
+                <th data-colspan-oval="2" data-colspan-yuvarlak="1" colspan="2">Dış Çap</th>
+                <th data-colspan-oval="2" data-colspan-yuvarlak="1" colspan="2">İç Çap</th>
+                <th data-colspan-oval="2" data-colspan-yuvarlak="1" colspan="2">Dış Çap</th>
+                <th data-colspan-oval="2" data-colspan-yuvarlak="1" colspan="2">İç Çap</th>
+                <th data-colspan-oval="2" data-colspan-yuvarlak="1" colspan="2" class="align-middle bg-warning bg-opacity-10">Radyal</th>
+                <th data-colspan-oval="2" data-colspan-yuvarlak="1" colspan="2">Dış Çap</th>
             </tr>
             <tr>
                 <th>K</th>
-                <th>U</th>
+                <th class="col-u-sargi">U</th>
                 <th>K</th>
-                <th>U</th>
+                <th class="col-u-sargi">U</th>
                 <th>K</th>
-                <th>U</th>
+                <th class="col-u-sargi">U</th>
                 <th>K</th>
-                <th>U</th>
+                <th class="col-u-sargi">U</th>
                 <th class="bg-sapma">K</th>
-                <th class="bg-sapma">U</th>
+                <th class="bg-sapma col-u-sargi">U</th>
                 <th class="bg-warning bg-opacity-10">K</th>
-                <th class="bg-warning bg-opacity-10">U</th>
+                <th class="bg-warning bg-opacity-10 col-u-sargi">U</th>
                 <th class="bg-sapma">K</th>
-                <th class="bg-sapma">U</th>
+                <th class="bg-sapma col-u-sargi">U</th>
             </tr>
         </thead>
         <tbody>
             <tr class="sargi-row" data-prefix="AG">
                 <td class="fw-bold">AG</td>
                 <td><input asp-for="AG_IcCap_K_Hesap" class="form-control numeric-input" /></td>
-                <td><input asp-for="AG_IcCap_U_Hesap" class="form-control numeric-input" /></td>
+                <td class="col-u-sargi"><input asp-for="AG_IcCap_U_Hesap" class="form-control numeric-input u-sargi-input" /></td>
                 <td><input asp-for="AG_DisCap_K_Hesap" class="form-control numeric-input" /></td>
-                <td><input asp-for="AG_DisCap_U_Hesap" class="form-control numeric-input" /></td>
+                <td class="col-u-sargi"><input asp-for="AG_DisCap_U_Hesap" class="form-control numeric-input u-sargi-input" /></td>
                 <td><input asp-for="AG_IcCap_K_Test" class="form-control numeric-input" /></td>
-                <td><input asp-for="AG_IcCap_U_Test" class="form-control numeric-input" /></td>
+                <td class="col-u-sargi"><input asp-for="AG_IcCap_U_Test" class="form-control numeric-input u-sargi-input" /></td>
                 <td><input asp-for="AG_DisCap_K_Test" class="form-control numeric-input" /></td>
-                <td><input asp-for="AG_DisCap_U_Test" class="form-control numeric-input" /></td>
+                <td class="col-u-sargi"><input asp-for="AG_DisCap_U_Test" class="form-control numeric-input u-sargi-input" /></td>
                 <td><input asp-for="AG_Sapma_IcCap_K" class="form-control bg-sapma out-s-val" readonly /></td>
-                <td><input asp-for="AG_Sapma_IcCap_U" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td class="col-u-sargi"><input asp-for="AG_Sapma_IcCap_U" class="form-control bg-sapma out-s-val u-sargi-input" readonly /></td>
                 <td><input asp-for="AG_Sapma_Radyal_K" class="form-control bg-warning bg-opacity-10 out-s-val" readonly /></td>
-                <td><input asp-for="AG_Sapma_Radyal_U" class="form-control bg-warning bg-opacity-10 out-s-val" readonly /></td>
+                <td class="col-u-sargi"><input asp-for="AG_Sapma_Radyal_U" class="form-control bg-warning bg-opacity-10 out-s-val u-sargi-input" readonly /></td>
                 <td><input asp-for="AG_Sapma_DisCap_K" class="form-control bg-sapma out-s-val" readonly /></td>
-                <td><input asp-for="AG_Sapma_DisCap_U" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td class="col-u-sargi"><input asp-for="AG_Sapma_DisCap_U" class="form-control bg-sapma out-s-val u-sargi-input" readonly /></td>
             </tr>
             <tr class="sargi-row" data-prefix="YG">
                 <td class="fw-bold">YG</td>
                 <td><input asp-for="YG_IcCap_K_Hesap" class="form-control numeric-input" /></td>
-                <td><input asp-for="YG_IcCap_U_Hesap" class="form-control numeric-input" /></td>
+                <td class="col-u-sargi"><input asp-for="YG_IcCap_U_Hesap" class="form-control numeric-input u-sargi-input" /></td>
                 <td><input asp-for="YG_DisCap_K_Hesap" class="form-control numeric-input" /></td>
-                <td><input asp-for="YG_DisCap_U_Hesap" class="form-control numeric-input" /></td>
+                <td class="col-u-sargi"><input asp-for="YG_DisCap_U_Hesap" class="form-control numeric-input u-sargi-input" /></td>
                 <td><input asp-for="YG_IcCap_K_Test" class="form-control numeric-input" /></td>
-                <td><input asp-for="YG_IcCap_U_Test" class="form-control numeric-input" /></td>
+                <td class="col-u-sargi"><input asp-for="YG_IcCap_U_Test" class="form-control numeric-input u-sargi-input" /></td>
                 <td><input asp-for="YG_DisCap_K_Test" class="form-control numeric-input" /></td>
-                <td><input asp-for="YG_DisCap_U_Test" class="form-control numeric-input" /></td>
+                <td class="col-u-sargi"><input asp-for="YG_DisCap_U_Test" class="form-control numeric-input u-sargi-input" /></td>
                 <td><input asp-for="YG_Sapma_IcCap_K" class="form-control bg-sapma out-s-val" readonly /></td>
-                <td><input asp-for="YG_Sapma_IcCap_U" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td class="col-u-sargi"><input asp-for="YG_Sapma_IcCap_U" class="form-control bg-sapma out-s-val u-sargi-input" readonly /></td>
                 <td><input asp-for="YG_Sapma_Radyal_K" class="form-control bg-warning bg-opacity-10 out-s-val" readonly /></td>
-                <td><input asp-for="YG_Sapma_Radyal_U" class="form-control bg-warning bg-opacity-10 out-s-val" readonly /></td>
+                <td class="col-u-sargi"><input asp-for="YG_Sapma_Radyal_U" class="form-control bg-warning bg-opacity-10 out-s-val u-sargi-input" readonly /></td>
                 <td><input asp-for="YG_Sapma_DisCap_K" class="form-control bg-sapma out-s-val" readonly /></td>
-                <td><input asp-for="YG_Sapma_DisCap_U" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td class="col-u-sargi"><input asp-for="YG_Sapma_DisCap_U" class="form-control bg-sapma out-s-val u-sargi-input" readonly /></td>
             </tr>
         </tbody>
     </table>
@@ -501,5 +502,38 @@
 
     $(document).on("keypress", ".numeric-input", function (evt) { if (!isNumberKey(evt)) evt.preventDefault(); });
     $(document).on("input", "input", calculateGeneral);
-    $(document).ready(calculateGeneral);
+
+    function updateSargiLayout() {
+        const select = document.getElementById('CekirdekTipiId');
+        if (!select) return;
+        const selectedText = (select.options[select.selectedIndex]?.text ?? '').trim().toLowerCase();
+        const isYuvarlak = selectedText === 'yuvarlak';
+
+        // U sütunlarını gizle/göster
+        document.querySelectorAll('.col-u-sargi').forEach(el => {
+            el.style.display = isYuvarlak ? 'none' : '';
+        });
+
+        // Colspan'ları güncelle
+        document.querySelectorAll('[data-colspan-yuvarlak]').forEach(el => {
+            el.colSpan = isYuvarlak
+                ? parseInt(el.dataset.colspanYuvarlak)
+                : parseInt(el.dataset.colspanOval);
+        });
+
+        // Yuvarlakta U alanlarını sıfırla
+        if (isYuvarlak) {
+            document.querySelectorAll('.u-sargi-input:not([readonly])').forEach(input => {
+                input.value = '';
+            });
+            calculateGeneral();
+        }
+    }
+
+    $('#CekirdekTipiId').on('change', updateSargiLayout);
+
+    $(document).ready(function () {
+        updateSargiLayout();
+        calculateGeneral();
+    });
 </script>

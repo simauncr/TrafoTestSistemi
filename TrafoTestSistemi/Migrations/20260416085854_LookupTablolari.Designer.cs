@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TrafoTestSistemi.Models;
 
@@ -11,9 +12,11 @@ using TrafoTestSistemi.Models;
 namespace TrafoTestSistemi.Migrations
 {
     [DbContext(typeof(TrafoContext))]
-    partial class TrafoContextModelSnapshot : ModelSnapshot
+    [Migration("20260416085854_LookupTablolari")]
+    partial class LookupTablolari
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
