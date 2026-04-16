@@ -1,0 +1,36 @@
+﻿@model TrafoTestSistemi.Models.TrafoTest
+
+@{
+    ViewData["Title"] = "Kaydı Sil";
+}
+
+<div class="container mt-5">
+    <div class="card border-danger shadow">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Kayıt Silme Onayı</h4>
+        </div>
+        <div class="card-body">
+            <h5 class="text-secondary">Bu kaydı silmek istediğinizden emin misiniz?</h5>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-3">Proje Adı:</dt>
+                <dd class="col-sm-9">@Model.ProjeAdi</dd>
+
+                <dt class="col-sm-3">Tasarım No:</dt>
+                <dd class="col-sm-9">@Model.TasarimNo</dd>
+
+                <dt class="col-sm-3">Müşteri:</dt>
+                <dd class="col-sm-9">@Model.Musteri</dd>
+
+                <dt class="col-sm-3">Test Tarihi:</dt>
+                <dd class="col-sm-9">@Model.TestTarihi.ToShortDateString()</dd>
+            </dl>
+
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger px-4 shadow">Evet, Sil</button>
+                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Vazgeç</a>
+            </form>
+        </div>
+    </div>
+</div>

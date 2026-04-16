@@ -1,0 +1,471 @@
+﻿@model TrafoTestSistemi.Models.TrafoTest
+
+<style>
+    .required-label::after {
+        content: " *";
+        color: red;
+        font-weight: bold;
+    }
+
+    .table-xs {
+        font-size: 0.7rem;
+    }
+
+        .table-xs input, .table-xs select {
+            font-size: 0.7rem !important;
+            padding: 2px 4px !important;
+            height: auto !important;
+            text-align: center;
+        }
+
+    .bg-sapma {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 0px;
+        padding: 6px;
+        background-color: #343a40;
+        color: #fff;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+    }
+
+    .table-bordered td, .table-bordered th {
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .mb-custom {
+        margin-bottom: 1rem;
+    }
+
+    .out-ht-warning {
+        background-color: #ffc107 !important;
+        color: black !important;
+        font-weight: bold;
+    }
+
+    .out-ht-green {
+        background-color: #28a745 !important;
+        color: white !important;
+        font-weight: bold;
+    }
+
+    .out-ht-red {
+        background-color: #dc3545 !important;
+        color: white !important;
+        font-weight: bold;
+    }
+</style>
+
+<div class="section-title">1. Genel Bilgiler</div>
+<div class="table-responsive mb-custom">
+    <table class="table table-sm table-bordered table-xs bg-white mb-0">
+        <thead class="table-light">
+            <tr>
+                <th class="required-label">Proje Adı</th>
+                <th class="required-label">Tasarım No</th>
+                <th class="required-label">Müşteri</th>
+                <th>Dizayn Id</th>
+                <th class="required-label">Elek. Müh.</th>
+                <th class="required-label">Mek. Müh.</th>
+                <th class="required-label">Dizayn Tarihi</th>
+                <th class="required-label">Test Tarihi</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input asp-for="ProjeAdi" id="ProjeAdi" class="form-control" required /></td>
+                <td><input asp-for="TasarimNo" class="form-control" required /></td>
+                <td><input asp-for="Musteri" class="form-control" required /></td>
+                <td><input asp-for="DizaynId" class="form-control" /></td>
+                <td><input asp-for="ElektrikMuhendisi" class="form-control" required /></td>
+                <td><input asp-for="MekanikMuhendisi" class="form-control" required /></td>
+                <td><input asp-for="DizaynTarihi" type="date" class="form-control" required /></td>
+                <td><input asp-for="TestTarihi" type="date" class="form-control" required /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section-title">2. Dizayn Bilgileri</div>
+<div class="table-responsive mb-custom">
+    <table class="table table-sm table-bordered table-xs bg-white mb-0">
+        <thead class="table-light">
+            <tr>
+                <th class="required-label">Güç (kVA)</th>
+                <th class="required-label">YG Gerilim</th>
+                <th class="required-label">AG Gerilim</th>
+                <th class="required-label">Bağlantı Grubu</th>
+                <th class="required-label">Çekirdek Tipi</th>
+                <th class="required-label">Sac Cinsi</th>
+                <th class="required-label">Kazan Cinsi</th>
+                <th class="required-label">Yağ Cinsi</th>
+                <th class="required-label">Frekans</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input asp-for="Guc" class="form-control numeric-input" required /></td>
+                <td><input asp-for="GerilimYG" class="form-control numeric-input" required /></td>
+                <td><input asp-for="GerilimAG" class="form-control numeric-input" required /></td>
+                <td><input asp-for="BaglantiGrubu" class="form-control" required /></td>
+                <td><input asp-for="CekirdekTipi" class="form-control" required /></td>
+                <td><input asp-for="SacCinsi" class="form-control" required /></td>
+                <td><input asp-for="KazanCinsi" class="form-control" required /></td>
+                <td><input asp-for="YagCinsi" class="form-control" required /></td>
+                <td><input asp-for="Frekans" class="form-control numeric-input" required /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section-title">3. Sargı Geometrisi</div>
+<div class="table-responsive mb-custom">
+    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
+        <thead class="table-light">
+            <tr>
+                <th rowspan="3" class="align-middle">Bölüm</th>
+                <th colspan="4">Hesap (mm)</th>
+                <th colspan="4">Test (mm)</th>
+                <th colspan="6">Sapma Değerleri (mm)</th>
+            </tr>
+            <tr>
+                <th colspan="2">İç Çap</th>
+                <th colspan="2">Dış Çap</th>
+                <th colspan="2">İç Çap</th>
+                <th colspan="2">Dış Çap</th>
+                <th colspan="2">İç Çap</th>
+                <th colspan="2" class="align-middle bg-warning bg-opacity-10">Radyal</th>
+                <th colspan="2">Dış Çap</th>
+            </tr>
+            <tr>
+                <th>K</th>
+                <th>U</th>
+                <th>K</th>
+                <th>U</th>
+                <th>K</th>
+                <th>U</th>
+                <th>K</th>
+                <th>U</th>
+                <th class="bg-sapma">K</th>
+                <th class="bg-sapma">U</th>
+                <th class="bg-warning bg-opacity-10">K</th>
+                <th class="bg-warning bg-opacity-10">U</th>
+                <th class="bg-sapma">K</th>
+                <th class="bg-sapma">U</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="sargi-row" data-prefix="AG">
+                <td class="fw-bold">AG</td>
+                <td><input asp-for="AG_IcCap_K_Hesap" class="form-control numeric-input" /></td>
+                <td><input asp-for="AG_IcCap_U_Hesap" class="form-control numeric-input" /></td>
+                <td><input asp-for="AG_DisCap_K_Hesap" class="form-control numeric-input" /></td>
+                <td><input asp-for="AG_DisCap_U_Hesap" class="form-control numeric-input" /></td>
+                <td><input asp-for="AG_IcCap_K_Test" class="form-control numeric-input" /></td>
+                <td><input asp-for="AG_IcCap_U_Test" class="form-control numeric-input" /></td>
+                <td><input asp-for="AG_DisCap_K_Test" class="form-control numeric-input" /></td>
+                <td><input asp-for="AG_DisCap_U_Test" class="form-control numeric-input" /></td>
+                <td><input asp-for="AG_Sapma_IcCap_K" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td><input asp-for="AG_Sapma_IcCap_U" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td><input asp-for="AG_Sapma_Radyal_K" class="form-control bg-warning bg-opacity-10 out-s-val" readonly /></td>
+                <td><input asp-for="AG_Sapma_Radyal_U" class="form-control bg-warning bg-opacity-10 out-s-val" readonly /></td>
+                <td><input asp-for="AG_Sapma_DisCap_K" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td><input asp-for="AG_Sapma_DisCap_U" class="form-control bg-sapma out-s-val" readonly /></td>
+            </tr>
+            <tr class="sargi-row" data-prefix="YG">
+                <td class="fw-bold">YG</td>
+                <td><input asp-for="YG_IcCap_K_Hesap" class="form-control numeric-input" /></td>
+                <td><input asp-for="YG_IcCap_U_Hesap" class="form-control numeric-input" /></td>
+                <td><input asp-for="YG_DisCap_K_Hesap" class="form-control numeric-input" /></td>
+                <td><input asp-for="YG_DisCap_U_Hesap" class="form-control numeric-input" /></td>
+                <td><input asp-for="YG_IcCap_K_Test" class="form-control numeric-input" /></td>
+                <td><input asp-for="YG_IcCap_U_Test" class="form-control numeric-input" /></td>
+                <td><input asp-for="YG_DisCap_K_Test" class="form-control numeric-input" /></td>
+                <td><input asp-for="YG_DisCap_U_Test" class="form-control numeric-input" /></td>
+                <td><input asp-for="YG_Sapma_IcCap_K" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td><input asp-for="YG_Sapma_IcCap_U" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td><input asp-for="YG_Sapma_Radyal_K" class="form-control bg-warning bg-opacity-10 out-s-val" readonly /></td>
+                <td><input asp-for="YG_Sapma_Radyal_U" class="form-control bg-warning bg-opacity-10 out-s-val" readonly /></td>
+                <td><input asp-for="YG_Sapma_DisCap_K" class="form-control bg-sapma out-s-val" readonly /></td>
+                <td><input asp-for="YG_Sapma_DisCap_U" class="form-control bg-sapma out-s-val" readonly /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section-title">4. Ağırlık Bilgileri (kg)</div>
+<div class="table-responsive mb-custom">
+    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 25%;">Açıklama</th>
+                <th style="width: 25%;">Hesap</th>
+                <th style="width: 25%;">Test</th>
+                <th style="width: 25%;" class="bg-sapma">Sapma Değerleri (kg)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="weight-row">
+                <td class="fw-bold text-start ps-3">Çekirdek</td>
+                <td><input asp-for="Cekirdek_Hesap" class="form-control numeric-input val-h" /></td>
+                <td><input asp-for="Cekirdek_Test" class="form-control numeric-input val-t" /></td>
+                <td><input asp-for="Cekirdek_Sapma" class="form-control bg-sapma out-w-sapma" readonly /></td>
+            </tr>
+            <tr class="weight-row">
+                <td class="fw-bold text-start ps-3">AG İletken</td>
+                <td><input asp-for="AGIletken_Hesap" class="form-control numeric-input val-h" /></td>
+                <td><input asp-for="AGIletken_Test" class="form-control numeric-input val-t" /></td>
+                <td><input asp-for="AGIletken_Sapma" class="form-control bg-sapma out-w-sapma" readonly /></td>
+            </tr>
+            <tr class="weight-row">
+                <td class="fw-bold text-start ps-3">YG İletken</td>
+                <td><input asp-for="YGIletken_Hesap" class="form-control numeric-input val-h" /></td>
+                <td><input asp-for="YGIletken_Test" class="form-control numeric-input val-t" /></td>
+                <td><input asp-for="YGIletken_Sapma" class="form-control bg-sapma out-w-sapma" readonly /></td>
+            </tr>
+            <tr class="weight-row">
+                <td class="fw-bold text-start ps-3">Yağ</td>
+                <td><input asp-for="Yag_Hesap" class="form-control numeric-input val-h" /></td>
+                <td><input asp-for="Yag_Test" class="form-control numeric-input val-t" /></td>
+                <td><input asp-for="Yag_Sapma" class="form-control bg-sapma out-w-sapma" readonly /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section-title">5. Kayıp Değerleri</div>
+<div class="table-responsive mb-custom">
+    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
+        <thead class="table-light">
+            <tr><th>Kategori</th><th>Garanti / Tolerans</th><th>Hesap</th><th>Test</th><th>Sapma GH</th><th>Sapma GT</th><th>Sapma HT</th></tr>
+        </thead>
+        <tbody>
+            <tr class="calc-row">
+                <td class="fw-bold bg-light text-start">P0 Boşta Kayıp</td>
+                <td class="d-flex border-0"><input asp-for="P0_Garanti" class="form-control me-1 val-garanti numeric-input" /><input asp-for="P0_Tolerans" class="form-control val-tolerans numeric-input" /></td>
+                <td><input asp-for="P0_Hesap" class="form-control val-hesap numeric-input" /></td>
+                <td><input asp-for="P0_Test" class="form-control val-test numeric-input" /></td>
+                <td><input asp-for="P0_Sapma_GH" class="form-control out-gh" readonly /></td>
+                <td><input asp-for="P0_Sapma_GT" class="form-control out-gt" readonly /></td>
+                <td><input asp-for="P0_Sapma_HT" class="form-control out-ht" readonly /></td>
+            </tr>
+            <tr class="calc-row">
+                <td class="fw-bold bg-light text-start">Pk Yükte Kayıp</td>
+                <td class="d-flex border-0"><input asp-for="Pk_Garanti" class="form-control me-1 val-garanti numeric-input" /><input asp-for="Pk_Tolerans" class="form-control val-tolerans numeric-input" /></td>
+                <td><input asp-for="Pk_Hesap" class="form-control val-hesap numeric-input" /></td>
+                <td><input asp-for="Pk_Test" class="form-control val-test numeric-input" /></td>
+                <td><input asp-for="Pk_Sapma_GH" class="form-control out-gh" readonly /></td>
+                <td><input asp-for="Pk_Sapma_GT" class="form-control out-gt" readonly /></td>
+                <td><input asp-for="Pk_Sapma_HT" class="form-control out-ht" readonly /></td>
+            </tr>
+            <tr class="calc-row">
+                <td class="fw-bold bg-light text-start">UK Kısa Devre</td>
+                <td class="d-flex border-0"><input asp-for="Uk_Garanti" class="form-control me-1 val-garanti numeric-input" /><input asp-for="Uk_Tolerans" class="form-control val-tolerans numeric-input" /></td>
+                <td><input asp-for="Uk_Hesap" class="form-control val-hesap numeric-input" /></td>
+                <td><input asp-for="Uk_Test" class="form-control val-test numeric-input" /></td>
+                <td><input asp-for="Uk_Sapma_GH" class="form-control out-gh" readonly /></td>
+                <td><input asp-for="Uk_Sapma_GT" class="form-control out-gt" readonly /></td>
+                <td><input asp-for="Uk_Sapma_HT" class="form-control out-ht" readonly /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section-title">6. Sıcaklık Değerleri</div>
+<div class="table-responsive mb-custom">
+    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
+        <thead class="table-light">
+            <tr><th>Kategori</th><th>Garanti</th><th>Hesap</th><th>Test</th><th>Sapma GH</th><th>Sapma GT</th><th>Sapma HT</th></tr>
+        </thead>
+        <tbody>
+            <tr class="calc-row">
+                <td class="fw-bold bg-light text-start">AG Gradient</td>
+                <td><input asp-for="AG_Grad_Garanti" class="form-control val-garanti numeric-input" /></td>
+                <td><input asp-for="AG_Grad_Hesap" class="form-control val-hesap numeric-input" /></td>
+                <td><input asp-for="AG_Grad_Test" class="form-control val-test numeric-input" /></td>
+                <td><input asp-for="AG_Grad_Sapma_GH" class="form-control out-gh" readonly /></td>
+                <td><input asp-for="AG_Grad_Sapma_GT" class="form-control out-gt" readonly /></td>
+                <td><input asp-for="AG_Grad_Sapma_HT" class="form-control out-ht" readonly /></td>
+            </tr>
+            <tr class="calc-row">
+                <td class="fw-bold bg-light text-start">YG Gradient</td>
+                <td><input asp-for="YG_Grad_Garanti" class="form-control val-garanti numeric-input" /></td>
+                <td><input asp-for="YG_Grad_Hesap" class="form-control val-hesap numeric-input" /></td>
+                <td><input asp-for="YG_Grad_Test" class="form-control val-test numeric-input" /></td>
+                <td><input asp-for="YG_Grad_Sapma_GH" class="form-control out-gh" readonly /></td>
+                <td><input asp-for="YG_Grad_Sapma_GT" class="form-control out-gt" readonly /></td>
+                <td><input asp-for="YG_Grad_Sapma_HT" class="form-control out-ht" readonly /></td>
+            </tr>
+            <tr class="calc-row">
+                <td class="fw-bold bg-light text-start">AG Sargı Isınması</td>
+                <td><input asp-for="AG_SargiIsinma_Garanti" class="form-control val-garanti numeric-input" /></td>
+                <td><input asp-for="AG_SargiIsinma_Hesap" class="form-control val-hesap numeric-input" /></td>
+                <td><input asp-for="AG_SargiIsinma_Test" class="form-control val-test numeric-input" /></td>
+                <td><input asp-for="AG_SargiIsinma_Sapma_GH" class="form-control out-gh" readonly /></td>
+                <td><input asp-for="AG_SargiIsinma_Sapma_GT" class="form-control out-gt" readonly /></td>
+                <td><input asp-for="AG_SargiIsinma_Sapma_HT" class="form-control out-ht" readonly /></td>
+            </tr>
+            <tr class="calc-row">
+                <td class="fw-bold bg-light text-start">YG Sargı Isınması</td>
+                <td><input asp-for="YG_SargiIsinma_Garanti" class="form-control val-garanti numeric-input" /></td>
+                <td><input asp-for="YG_SargiIsinma_Hesap" class="form-control val-hesap numeric-input" /></td>
+                <td><input asp-for="YG_SargiIsinma_Test" class="form-control val-test numeric-input" /></td>
+                <td><input asp-for="YG_SargiIsinma_Sapma_GH" class="form-control out-gh" readonly /></td>
+                <td><input asp-for="YG_SargiIsinma_Sapma_GT" class="form-control out-gt" readonly /></td>
+                <td><input asp-for="YG_SargiIsinma_Sapma_HT" class="form-control out-ht" readonly /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section-title">7. Kazan Değerleri</div>
+<div class="table-responsive mb-custom">
+    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
+        <thead class="table-light">
+            <tr><th>Kategori</th><th>Elektrik Garan.</th><th>Mek. Hesap</th><th>Test</th><th>Sapma EG.H</th><th>Sapma MG.T</th><th>Sapma MH.T</th></tr>
+        </thead>
+        <tbody>
+            <tr class="calc-row">
+                <td class="fw-bold bg-light text-start">P55 Bilgisi</td>
+                <td><input asp-for="P55_ElekGaran" class="form-control val-garanti numeric-input" /></td>
+                <td><input asp-for="P55_MekHesap" class="form-control val-hesap numeric-input" /></td>
+                <td><input asp-for="P55_Test" class="form-control val-test numeric-input" /></td>
+                <td><input asp-for="P55_Sapma_EGH" class="form-control out-gh" readonly /></td>
+                <td><input asp-for="P55_Sapma_MGT" class="form-control out-gt" readonly /></td>
+                <td><input asp-for="P55_Sapma_MHT" class="form-control out-ht" readonly /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode != 44 && charCode != 46) return false;
+        return true;
+    }
+
+    function applyColorWarning(inputElement, val) {
+        const input = $(inputElement);
+        if (val > 0) {
+            input.removeClass("out-ht-warning out-ht-green").addClass("out-ht-red");
+        } else if (val < 0) {
+            input.removeClass("out-ht-red out-ht-green").addClass("out-ht-warning");
+        } else {
+            input.removeClass("out-ht-red out-ht-warning out-ht-green");
+        }
+    }
+
+    function calculateGeneral() {
+        $(".sargi-row").each(function() {
+            const row = $(this);
+            const prefix = row.data("prefix");
+            const getVal = (id) => {
+                let v = row.find(`[name$='${prefix}_${id}']`).val();
+                return (v && v.trim() !== "") ? parseFloat(v.toString().replace(',', '.')) : null;
+            };
+
+            const setVal = (selector, h, t) => {
+                const el = row.find(selector);
+                if (h !== null && t !== null) {
+                    const diff = (t - h).toFixed(2);
+                    el.val(diff);
+                    applyColorWarning(el, parseFloat(diff));
+                } else {
+                    el.val("").removeClass("out-ht-red out-ht-warning out-ht-green");
+                }
+            };
+
+            setVal("[name$='Sapma_IcCap_K']", getVal("IcCap_K_Hesap"), getVal("IcCap_K_Test"));
+            setVal("[name$='Sapma_IcCap_U']", getVal("IcCap_U_Hesap"), getVal("IcCap_U_Test"));
+            setVal("[name$='Sapma_DisCap_K']", getVal("DisCap_K_Hesap"), getVal("DisCap_K_Test"));
+            setVal("[name$='Sapma_DisCap_U']", getVal("DisCap_U_Hesap"), getVal("DisCap_U_Test"));
+
+            const vHhK = getVal("DisCap_K_Hesap"); const vHiK = getVal("IcCap_K_Hesap");
+            const vThK = getVal("DisCap_K_Test");  const vTiK = getVal("IcCap_K_Test");
+            const radKEl = row.find("[name$='Sapma_Radyal_K']");
+            if(vHhK !== null && vHiK !== null && vThK !== null && vTiK !== null) {
+                const diff = ((vThK - vTiK) - (vHhK - vHiK)).toFixed(2);
+                radKEl.val(diff);
+                applyColorWarning(radKEl, parseFloat(diff));
+            } else { radKEl.val("").removeClass("out-ht-red out-ht-warning out-ht-green"); }
+
+            const vHhU = getVal("DisCap_U_Hesap"); const vHiU = getVal("IcCap_U_Hesap");
+            const vThU = getVal("DisCap_U_Test");  const vTiU = getVal("IcCap_U_Test");
+            const radUEl = row.find("[name$='Sapma_Radyal_U']");
+            if(vHhU !== null && vHiU !== null && vThU !== null && vTiU !== null) {
+                const diff = ((vThU - vTiU) - (vHhU - vHiU)).toFixed(2);
+                radUEl.val(diff);
+                applyColorWarning(radUEl, parseFloat(diff));
+            } else { radUEl.val("").removeClass("out-ht-red out-ht-warning out-ht-green"); }
+        });
+
+        $(".weight-row").each(function() {
+            const row = $(this);
+            const h = parseFloat(row.find(".val-h").val()?.toString().replace(',', '.')) || null;
+            const t = parseFloat(row.find(".val-t").val()?.toString().replace(',', '.')) || null;
+            const out = row.find(".out-w-sapma");
+            if (h !== null && t !== null) {
+                const diff = (t - h).toFixed(2);
+                out.val(diff);
+                applyColorWarning(out, parseFloat(diff));
+            } else {
+                out.val("").removeClass("out-ht-red out-ht-warning out-ht-green");
+            }
+        });
+
+        $(".calc-row").each(function () {
+            const row = $(this);
+            const getVal = (sel) => {
+                let v = row.find(sel).val();
+                return (v && v.trim() !== "") ? parseFloat(v.toString().replace(',', '.')) : null;
+            };
+            const gar = getVal(".val-garanti");
+            const hes = getVal(".val-hesap");
+            const tst = getVal(".val-test");
+            const tolInput = row.find(".val-tolerans");
+            let tolPercent = tolInput.length > 0 ? (parseFloat(tolInput.val()?.toString().replace(',', '.')) || 0) : null;
+
+            if (gar !== null && gar !== 0) {
+                if(hes !== null) row.find(".out-gh").val(((hes - gar) / gar * 100).toFixed(2));
+                if(tst !== null) row.find(".out-gt").val(((tst - gar) / gar * 100).toFixed(2));
+            }
+
+            const htInput = row.find(".out-ht");
+            if (hes !== null && tst !== null && hes !== 0) {
+                const ht = ((tst - hes) / hes * 100).toFixed(2);
+                htInput.val(ht);
+
+                if (tolPercent !== null) {
+                    const limitMiktari = Math.abs(hes * (tolPercent / 100));
+                    const farkMiktari = Math.abs(tst - hes);
+                    if (farkMiktari > limitMiktari) {
+                        htInput.removeClass("out-ht-green").addClass("out-ht-red");
+                    } else {
+                        htInput.removeClass("out-ht-red").addClass("out-ht-green");
+                    }
+                } else {
+                    if (gar !== null && tst > gar) {
+                        htInput.removeClass("out-ht-green").addClass("out-ht-red");
+                    } else {
+                        htInput.removeClass("out-ht-red").addClass("out-ht-green");
+                    }
+                }
+            } else {
+                htInput.removeClass("out-ht-red out-ht-green").val("");
+            }
+        });
+    }
+
+    $(document).on("keypress", ".numeric-input", function (evt) { if (!isNumberKey(evt)) evt.preventDefault(); });
+    $(document).on("input", "input", calculateGeneral);
+    $(document).ready(calculateGeneral);
+</script>
