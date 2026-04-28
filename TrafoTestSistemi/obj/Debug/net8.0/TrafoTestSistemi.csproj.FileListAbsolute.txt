@@ -571,4 +571,3 @@ C:\Users\SimaHnm\source\repos\TrafoTestSistemi\TrafoTestSistemi\obj\Debug\net8.0
 C:\Users\SimaHnm\source\repos\TrafoTestSistemi\TrafoTestSistemi\obj\Debug\net8.0\TrafoTestSistemi.pdb
 C:\Users\SimaHnm\source\repos\TrafoTestSistemi\TrafoTestSistemi\obj\Debug\net8.0\TrafoTestSistemi.genruntimeconfig.cache
 C:\Users\SimaHnm\source\repos\TrafoTestSistemi\TrafoTestSistemi\obj\Debug\net8.0\ref\TrafoTestSistemi.dll
-C:\Users\SimaHnm\source\repos\TrafoTestSistemi\TrafoTestSistemi\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

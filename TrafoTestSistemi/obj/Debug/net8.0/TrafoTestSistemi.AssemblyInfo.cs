@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TrafoTestSistemi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d67700fff351ee420a796256e21cdcb655df370a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9f703e584546733a6a70cffa895bb6e935ae21e")]
 [assembly: System.Reflection.AssemblyProductAttribute("TrafoTestSistemi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TrafoTestSistemi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

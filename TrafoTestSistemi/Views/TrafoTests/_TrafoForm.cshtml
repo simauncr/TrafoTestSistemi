@@ -509,19 +509,16 @@
         const selectedText = (select.options[select.selectedIndex]?.text ?? '').trim().toLowerCase();
         const isYuvarlak = selectedText === 'yuvarlak';
 
-        // U sütunlarını gizle/göster
         document.querySelectorAll('.col-u-sargi').forEach(el => {
             el.style.display = isYuvarlak ? 'none' : '';
         });
 
-        // Colspan'ları güncelle
         document.querySelectorAll('[data-colspan-yuvarlak]').forEach(el => {
             el.colSpan = isYuvarlak
                 ? parseInt(el.dataset.colspanYuvarlak)
                 : parseInt(el.dataset.colspanOval);
         });
 
-        // Yuvarlakta U alanlarını sıfırla
         if (isYuvarlak) {
             document.querySelectorAll('.u-sargi-input:not([readonly])').forEach(input => {
                 input.value = '';

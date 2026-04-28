@@ -1,4 +1,4 @@
-namespace TrafoTestSistemi.Models
+﻿namespace TrafoTestSistemi.Models
 {
     public class ErrorViewModel
     {

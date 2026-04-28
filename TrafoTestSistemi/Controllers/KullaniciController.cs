@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TrafoTestSistemi.Models;
 
@@ -13,20 +13,17 @@ namespace TrafoTestSistemi.Controllers
             _context = context;
         }
 
-        // GET: Kullanici
         public async Task<IActionResult> Index()
         {
             var kullanicilar = await _context.Kullanicilar.ToListAsync();
             return View(kullanicilar);
         }
 
-        // GET: Kullanici/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Kullanici/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Kullanici kullanici)
@@ -41,7 +38,6 @@ namespace TrafoTestSistemi.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Kullanici/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -54,7 +50,6 @@ namespace TrafoTestSistemi.Controllers
             return View(kullanici);
         }
 
-        // POST: Kullanici/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Kullanici kullanici)
@@ -81,7 +76,6 @@ namespace TrafoTestSistemi.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Kullanici/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -94,7 +88,6 @@ namespace TrafoTestSistemi.Controllers
             return View(kullanici);
         }
 
-        // POST: Kullanici/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

@@ -193,7 +193,6 @@ namespace TrafoTestSistemi.Controllers
             }
             return RedirectToAction(nameof(Index));
 
-
         }
 
         [HttpGet]
