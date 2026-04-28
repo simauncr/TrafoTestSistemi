@@ -1,4 +1,10 @@
-﻿.vs/
-bin/
-obj/
+﻿# Visual Studio
+.vs/
+*.suo
 *.user
+*.userosscache
+*.sln.docstates
+
+# Build outputs (ignore in any project folder)
+**/bin/
+**/obj/
