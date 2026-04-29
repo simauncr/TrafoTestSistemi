@@ -9,6 +9,7 @@ namespace TrafoTestSistemi.Models
         public DbSet<TrafoTest> TestKayitlari { get; set; }
         public DbSet<AppUser> Users { get; set; }
         public DbSet<Kullanici> Kullanicilar { get; set; }
+        public DbSet<Muhendis> Muhendisler { get; set; }
         public DbSet<CekirdekTipi> CekirdekTipleri { get; set; }
         public DbSet<SacCinsi> SacCinsleri { get; set; }
         public DbSet<KazanCinsi> KazanCinsleri { get; set; }
@@ -17,6 +18,27 @@ namespace TrafoTestSistemi.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<TrafoTest>()
+                .HasOne(x => x.ElektrikMuhendisi)
+                .WithMany()
+                .HasForeignKey(x => x.ElektrikMuhendisiId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TrafoTest>()
+                .HasOne(x => x.MekanikMuhendisi)
+                .WithMany()
+                .HasForeignKey(x => x.MekanikMuhendisiId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Muhendis>()
+                .Property(x => x.AdSoyad)
+                .HasMaxLength(450)
+                .IsRequired();
+
+            modelBuilder.Entity<Muhendis>()
+                .HasIndex(x => x.AdSoyad)
+                .IsUnique();
 
             modelBuilder.Entity<CekirdekTipi>().HasData(
                 new CekirdekTipi { Id = 1, Ad = "Yuvarlak" },

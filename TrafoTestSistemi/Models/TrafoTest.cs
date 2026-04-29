@@ -20,11 +20,21 @@ namespace TrafoTestSistemi.Models
 
         public string? DizaynId { get; set; }
 
-        [Required]
-        public string? ElektrikMuhendisi { get; set; }
+        public int ElektrikMuhendisiId { get; set; }
+        public Muhendis? ElektrikMuhendisi { get; set; }
 
+        public int MekanikMuhendisiId { get; set; }
+        public Muhendis? MekanikMuhendisi { get; set; }
+
+        [NotMapped]
         [Required]
-        public string? MekanikMuhendisi { get; set; }
+        [Display(Name = "Elek. Müh.")]
+        public string ElektrikMuhendisiAdSoyad { get; set; } = string.Empty;
+
+        [NotMapped]
+        [Required]
+        [Display(Name = "Mek. Müh.")]
+        public string MekanikMuhendisiAdSoyad { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
         public DateTime DizaynTarihi { get; set; } = DateTime.Now;

@@ -40,7 +40,10 @@ namespace TrafoTestSistemi.Controllers
 
         public async Task<IActionResult> ExcelIndir()
         {
-            var veriler = await _context.TestKayitlari.ToListAsync();
+            var veriler = await _context.TestKayitlari
+                .Include(x => x.ElektrikMuhendisi)
+                .Include(x => x.MekanikMuhendisi)
+                .ToListAsync();
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Trafo Detayli Rapor");
@@ -69,8 +72,8 @@ namespace TrafoTestSistemi.Controllers
                     worksheet.Cell(row, 2).SetValue(item.TasarimNo ?? "");
                     worksheet.Cell(row, 3).SetValue(item.Musteri ?? "");
                     worksheet.Cell(row, 4).SetValue(item.DizaynId ?? "");
-                    worksheet.Cell(row, 5).SetValue(item.ElektrikMuhendisi ?? "");
-                    worksheet.Cell(row, 6).SetValue(item.MekanikMuhendisi ?? "");
+                    worksheet.Cell(row, 5).SetValue(item.ElektrikMuhendisi?.AdSoyad ?? "");
+                    worksheet.Cell(row, 6).SetValue(item.MekanikMuhendisi?.AdSoyad ?? "");
                     worksheet.Cell(row, 7).SetValue(item.Guc);
                     worksheet.Cell(row, 8).SetValue(item.GerilimYG);
                     worksheet.Cell(row, 9).SetValue(item.GerilimAG);
@@ -113,6 +116,7 @@ namespace TrafoTestSistemi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TrafoTest trafoTest)
         {
+            await SetMuhendisIdsAsync(trafoTest);
             if (ModelState.IsValid)
             {
                 trafoTest.Hesapla();
@@ -127,8 +131,15 @@ namespace TrafoTestSistemi.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-            var trafo = await _context.TestKayitlari.FindAsync(id);
+            var trafo = await _context.TestKayitlari
+                .Include(x => x.ElektrikMuhendisi)
+                .Include(x => x.MekanikMuhendisi)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (trafo == null) return NotFound();
+
+            trafo.ElektrikMuhendisiAdSoyad = trafo.ElektrikMuhendisi?.AdSoyad ?? string.Empty;
+            trafo.MekanikMuhendisiAdSoyad = trafo.MekanikMuhendisi?.AdSoyad ?? string.Empty;
+
             YukleSelectListler();
             return View(trafo);
         }
@@ -138,23 +149,61 @@ namespace TrafoTestSistemi.Controllers
         public async Task<IActionResult> Edit(int id, TrafoTest trafoTest)
         {
             if (id != trafoTest.Id) return NotFound();
-            if (ModelState.IsValid)
+            await SetMuhendisIdsAsync(trafoTest);
+
+            var isAjax = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+            if (!ModelState.IsValid)
             {
-                try
+                if (isAjax)
                 {
-                    trafoTest.Hesapla();
-                    _context.Update(trafoTest);
-                    await _context.SaveChangesAsync();
+                    var errors = ModelState
+                        .Where(x => x.Value?.Errors.Count > 0)
+                        .ToDictionary(
+                            x => x.Key,
+                            x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                        );
+
+                    var firstError = errors
+                        .SelectMany(kvp => kvp.Value.Select(msg => new { Field = kvp.Key, Message = msg }))
+                        .FirstOrDefault();
+
+                    var message = firstError == null
+                        ? "Validasyon hatası."
+                        : $"Validasyon hatası: {firstError.Field} - {firstError.Message}";
+
+                    return BadRequest(new { success = false, message, errors });
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.TestKayitlari.Any(e => e.Id == trafoTest.Id)) return NotFound();
-                    else throw;
-                }
-                return RedirectToAction(nameof(Index));
+
+                YukleSelectListler();
+                return View(trafoTest);
             }
-            YukleSelectListler();
-            return View(trafoTest);
+
+            try
+            {
+                trafoTest.Hesapla();
+                _context.Update(trafoTest);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.TestKayitlari.Any(e => e.Id == trafoTest.Id)) return NotFound();
+                throw;
+            }
+            catch (DbUpdateException ex)
+            {
+                if (isAjax)
+                {
+                    return BadRequest(new { success = false, message = "Veritabanına kayıt sırasında hata oluştu.", detail = ex.InnerException?.Message ?? ex.Message });
+                }
+                throw;
+            }
+
+            if (isAjax)
+            {
+                return Ok(new { success = true });
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -164,6 +213,12 @@ namespace TrafoTestSistemi.Controllers
             if (!string.IsNullOrEmpty(YeniProjeAdi))
             {
                 trafoTest.ProjeAdi = YeniProjeAdi;
+            }
+
+            await SetMuhendisIdsAsync(trafoTest);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { success = false, message = "Mühendis bilgileri geçersiz." });
             }
 
             trafoTest.Hesapla();
@@ -210,7 +265,47 @@ namespace TrafoTestSistemi.Controllers
             ViewBag.SacCinsleri = _context.SacCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
             ViewBag.KazanCinsleri = _context.KazanCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
             ViewBag.YagCinsleri = _context.YagCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
-            ViewBag.MuhendisListesi = _context.Kullanicilar.OrderBy(x => x.AdSoyad).Select(x => x.AdSoyad).ToList();
+            ViewBag.MuhendisListesi = _context.Muhendisler.OrderBy(x => x.AdSoyad).Select(x => x.AdSoyad).ToList();
+        }
+
+        private async Task SetMuhendisIdsAsync(TrafoTest trafoTest)
+        {
+            if (string.IsNullOrWhiteSpace(trafoTest.ElektrikMuhendisiAdSoyad))
+            {
+                ModelState.AddModelError(nameof(TrafoTest.ElektrikMuhendisiAdSoyad), "Elektrik mühendisi zorunludur.");
+            }
+            else
+            {
+                trafoTest.ElektrikMuhendisiId = await GetOrCreateMuhendisIdAsync(trafoTest.ElektrikMuhendisiAdSoyad);
+            }
+
+            if (string.IsNullOrWhiteSpace(trafoTest.MekanikMuhendisiAdSoyad))
+            {
+                ModelState.AddModelError(nameof(TrafoTest.MekanikMuhendisiAdSoyad), "Mekanik mühendisi zorunludur.");
+            }
+            else
+            {
+                trafoTest.MekanikMuhendisiId = await GetOrCreateMuhendisIdAsync(trafoTest.MekanikMuhendisiAdSoyad);
+            }
+        }
+
+        private async Task<int> GetOrCreateMuhendisIdAsync(string adSoyad)
+        {
+            var normalized = adSoyad.Trim();
+            var existing = await _context.Muhendisler
+                .Where(x => x.AdSoyad == normalized)
+                .Select(x => new { x.Id })
+                .FirstOrDefaultAsync();
+
+            if (existing != null)
+            {
+                return existing.Id;
+            }
+
+            var muhendis = new Muhendis { AdSoyad = normalized };
+            _context.Muhendisler.Add(muhendis);
+            await _context.SaveChangesAsync();
+            return muhendis.Id;
         }
     }
 } 

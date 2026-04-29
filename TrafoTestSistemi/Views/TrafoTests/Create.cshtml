@@ -27,6 +27,34 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            function serializeFormWithoutBlankNumerics($form) {
+                const disabled = [];
+
+                // Always exclude calculated output fields (server recalculates anyway)
+                const calculatedSelector = "input.out-s-val, input.out-w-sapma, input.out-ht, input.out-gh, input.out-gt";
+                $form.find(calculatedSelector).each(function () {
+                    const $el = $(this);
+                    if (!$el.prop("disabled")) {
+                        $el.prop("disabled", true);
+                        disabled.push($el);
+                    }
+                });
+
+                // Exclude blank numeric inputs to prevent binding "" -> double errors
+                $form.find("input.numeric-input").each(function () {
+                    const $el = $(this);
+                    const v = ($el.val() ?? "").toString().trim();
+                    if (v === "" && !$el.prop("disabled")) {
+                        $el.prop("disabled", true);
+                        disabled.push($el);
+                    }
+                });
+
+                const data = $form.serialize();
+                disabled.forEach($el => $el.prop("disabled", false));
+                return data;
+            }
+
             $("#trafoForm").on("submit", function (e) {
                 e.preventDefault();
                 const form = $(this);
@@ -34,7 +62,7 @@
                 $.ajax({
                     url: form.attr("action"),
                     type: "POST",
-                    data: form.serialize(),
+                    data: serializeFormWithoutBlankNumerics(form),
                     success: function () {
                         Swal.fire({ icon: 'success', title: 'Başarılı!', text: 'Kayıt oluşturuldu.', timer: 1500, showConfirmButton: false })
                         .then(() => window.location.href = "@indexUrl");

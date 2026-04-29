@@ -8,22 +8,18 @@
     <div class="card shadow border-0">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
             <h6 class="mb-0">TRANSFORMATÖR TASARIM VE TEST DÜZENLEME FORMU</h6>
-            <span class="badge bg-light text-dark" style="font-size: 0.7rem;">ID: @Model.Id</span>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" id="btnFarkliKaydet" class="btn btn-sm btn-info px-4 shadow fw-bold" form="trafoEditForm">Farklı Kaydet</button>
+                <button type="submit" class="btn btn-sm btn-primary px-5 shadow fw-bold" form="trafoEditForm">Değişiklikleri Kaydet</button>
+                <span class="badge bg-light text-dark" style="font-size: 0.7rem;">ID: @Model.Id</span>
+            </div>
         </div>
         <div class="card-body bg-light p-2">
-            <form asp-action="Edit" method="post" id="trafoEditForm" novalidate>
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post" id="trafoEditForm" novalidate>
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" id="OriginalId" />
 
                 @await Html.PartialAsync("_TrafoForm", Model)
-
-                <div class="mt-4 d-flex justify-content-between pb-5">
-                    <a asp-action="Index" class="btn btn-sm btn-outline-secondary px-4">Geri Dön</a>
-                    <div>
-                        <button type="button" id="btnFarkliKaydet" class="btn btn-sm btn-info px-4 shadow fw-bold me-2">Farklı Kaydet</button>
-                        <button type="submit" class="btn btn-sm btn-primary px-5 shadow fw-bold">Değişiklikleri Kaydet</button>
-                    </div>
-                </div>
             </form>
         </div>
     </div>
@@ -32,6 +28,34 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            function serializeFormWithoutBlankNumerics($form) {
+                const disabled = [];
+
+                // Always exclude calculated output fields (server recalculates anyway)
+                const calculatedSelector = "input.out-s-val, input.out-w-sapma, input.out-ht, input.out-gh, input.out-gt";
+                $form.find(calculatedSelector).each(function () {
+                    const $el = $(this);
+                    if (!$el.prop("disabled")) {
+                        $el.prop("disabled", true);
+                        disabled.push($el);
+                    }
+                });
+
+                // Exclude blank numeric inputs to prevent binding "" -> double errors
+                $form.find("input.numeric-input").each(function () {
+                    const $el = $(this);
+                    const v = ($el.val() ?? "").toString().trim();
+                    if (v === "" && !$el.prop("disabled")) {
+                        $el.prop("disabled", true);
+                        disabled.push($el);
+                    }
+                });
+
+                const data = $form.serialize();
+                disabled.forEach($el => $el.prop("disabled", false));
+                return data;
+            }
+
             $("#trafoEditForm").on("submit", function (e) {
                 e.preventDefault();
                 const form = $(this);
@@ -39,17 +63,69 @@
                 $.ajax({
                     url: form.attr("action"),
                     type: "POST",
-                    data: form.serialize(),
-                    success: function () {
-                        Swal.fire({ icon: 'success', title: 'Güncellendi!', text: 'Değişiklikler kaydedildi.', timer: 1500, showConfirmButton: false });
+                    data: serializeFormWithoutBlankNumerics(form),
+                    success: function (res) {
+                        if (res && res.success) {
+                            Swal.fire({ icon: 'success', title: 'Güncellendi!', text: 'Değişiklikler kaydedildi.', timer: 1500, showConfirmButton: false });
+                            return;
+                        }
+
+                        Swal.fire({ icon: 'error', title: 'Hata!', text: (res && res.message) ? res.message : 'Güncelleme sırasında hata oluştu.' });
                     },
-                    error: function () { Swal.fire({ icon: 'error', title: 'Hata!', text: 'Güncelleme sırasında hata oluştu.' }); }
+                    error: function (xhr) {
+                        let message = 'Güncelleme sırasında hata oluştu.';
+                        let details = null;
+                        if (xhr && xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                message = xhr.responseJSON.message;
+                            }
+
+                            if (xhr.responseJSON.errors) {
+                                const lines = [];
+                                Object.keys(xhr.responseJSON.errors).forEach(function (field) {
+                                    const arr = xhr.responseJSON.errors[field] || [];
+                                    arr.forEach(function (msg) {
+                                        lines.push(field + ': ' + msg);
+                                    });
+                                });
+                                if (lines.length) {
+                                    details = lines.join('\n');
+                                }
+                            }
+                        }
+
+                        Swal.fire({ icon: 'error', title: 'Hata!', text: message, footer: details ? ('<pre style="text-align:left; white-space:pre-wrap; margin:0;">' + details + '</pre>') : undefined });
+                    }
                 });
             });
 
             $("#btnFarkliKaydet").on("click", function () {
                 const currentName = $("#ProjeAdi").val();
-                let formData = $("#trafoEditForm").serializeArray();
+                const editForm = $("#trafoEditForm");
+                const disabled = [];
+
+                // Always exclude calculated output fields
+                const calculatedSelector = "input.out-s-val, input.out-w-sapma, input.out-ht, input.out-gh, input.out-gt";
+                editForm.find(calculatedSelector).each(function () {
+                    const $el = $(this);
+                    if (!$el.prop("disabled")) {
+                        $el.prop("disabled", true);
+                        disabled.push($el);
+                    }
+                });
+
+                // Exclude blank numeric inputs
+                editForm.find("input.numeric-input").each(function () {
+                    const $el = $(this);
+                    const v = ($el.val() ?? "").toString().trim();
+                    if (v === "" && !$el.prop("disabled")) {
+                        $el.prop("disabled", true);
+                        disabled.push($el);
+                    }
+                });
+
+                let formData = editForm.serializeArray();
+                disabled.forEach($el => $el.prop("disabled", false));
                 formData = formData.filter(item => item.name !== "Id");
                 formData.push({ name: "Id", value: 0 }, { name: "YeniProjeAdi", value: currentName });
                 $.post("@Url.Action("SaveAs", "TrafoTests")", formData, function() {
