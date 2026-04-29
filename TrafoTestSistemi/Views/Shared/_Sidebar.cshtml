@@ -1,0 +1,39 @@
+@{
+    var controller = (ViewContext.RouteData.Values["controller"]?.ToString() ?? "").ToLowerInvariant();
+    var action = (ViewContext.RouteData.Values["action"]?.ToString() ?? "").ToLowerInvariant();
+
+    string ActiveIf(string c, string? a = null)
+    {
+        var isActive = controller == c.ToLowerInvariant() && (a == null || action == a.ToLowerInvariant());
+        return isActive ? "active" : "";
+    }
+}
+
+<div class="app-sidebar__brand d-flex align-items-center gap-2 px-3 py-3">
+    <a class="text-decoration-none d-flex align-items-center gap-2" asp-controller="TrafoTests" asp-action="Index">
+        <span class="app-brand__mark text-primary fw-bold">Trafo</span>
+        <span class="text-dark fw-semibold">Takip</span>
+    </a>
+</div>
+
+<div class="px-3 pb-3">
+    <div class="text-uppercase text-muted small fw-semibold mb-2 app-sidebar__section">Menü</div>
+    <nav class="nav nav-pills flex-column gap-1">
+        <a class="nav-link d-flex align-items-center gap-2 @ActiveIf("trafotests", "index")" asp-controller="TrafoTests" asp-action="Index">
+            <i class="fa-solid fa-list"></i>
+            <span>Trafo Listesi</span>
+        </a>
+        <a class="nav-link d-flex align-items-center gap-2 @ActiveIf("trafotests", "analiz")" asp-controller="TrafoTests" asp-action="Analiz">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Analiz Raporu</span>
+        </a>
+        <a class="nav-link d-flex align-items-center gap-2 @ActiveIf("trafotests", "create")" asp-controller="TrafoTests" asp-action="Create">
+            <i class="fa-solid fa-plus"></i>
+            <span>Yeni Test</span>
+        </a>
+        <a class="nav-link d-flex align-items-center gap-2 @ActiveIf("kullanici")" asp-controller="Kullanici" asp-action="Index">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>Kullanıcı Yönetimi</span>
+        </a>
+    </nav>
+</div>
