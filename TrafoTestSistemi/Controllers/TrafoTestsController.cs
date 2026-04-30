@@ -18,8 +18,22 @@ namespace TrafoTestSistemi.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? q)
         {
+            var aramaMetni = q?.Trim();
+            if (!string.IsNullOrWhiteSpace(aramaMetni))
+            {
+                var eslesmeler = await FiltrelenmisTrafoSorgusu(aramaMetni)
+                    .Select(x => new { x.Id })
+                    .ToListAsync();
+
+                if (eslesmeler.Count == 1)
+                {
+                    return RedirectToAction(nameof(Edit), new { id = eslesmeler[0].Id });
+                }
+            }
+
+            ViewBag.SearchQuery = aramaMetni;
             var veriler = await _context.TestKayitlari.ToListAsync();
             return View(veriler);
         }
@@ -251,12 +265,28 @@ namespace TrafoTestSistemi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTrafolar()
+        public async Task<IActionResult> GetTrafolar(string? q)
         {
-            var veriler = await _context.TestKayitlari
+            var veriler = await FiltrelenmisTrafoSorgusu(q)
                 .OrderByDescending(x => x.Id)
                 .ToListAsync();
             return Json(new { data = veriler });
+        }
+
+        private IQueryable<TrafoTest> FiltrelenmisTrafoSorgusu(string? q)
+        {
+            var sorgu = _context.TestKayitlari.AsQueryable();
+            var aramaMetni = q?.Trim();
+
+            if (string.IsNullOrWhiteSpace(aramaMetni))
+            {
+                return sorgu;
+            }
+
+            return sorgu.Where(x =>
+                (x.ProjeAdi != null && x.ProjeAdi.Contains(aramaMetni)) ||
+                (x.Musteri != null && x.Musteri.Contains(aramaMetni)) ||
+                (x.TasarimNo != null && x.TasarimNo.Contains(aramaMetni)));
         }
 
         private void YukleSelectListler()

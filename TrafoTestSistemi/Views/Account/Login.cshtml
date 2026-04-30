@@ -7,61 +7,270 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Giriş - Trafo Test Sistemi</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 1.5rem;
+            font-family: "Public Sans", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(115, 103, 240, 0.22), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(40, 199, 111, 0.14), transparent 26%),
+                linear-gradient(135deg, #f5f5f9 0%, #ececf6 100%);
+        }
+
+        .login-shell {
+            width: min(980px, 100%);
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(231, 231, 239, 0.95);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 1rem 2.5rem rgba(68, 64, 80, 0.14);
+            backdrop-filter: blur(12px);
+        }
+
+        .login-showcase {
+            background:
+                linear-gradient(180deg, rgba(47, 51, 73, 0.96), rgba(37, 41, 60, 0.98)),
+                linear-gradient(135deg, rgba(115, 103, 240, 0.48), rgba(40, 199, 111, 0.16));
+            color: #fff;
+            padding: 2.75rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .login-showcase::after {
+            content: "";
+            position: absolute;
+            inset: auto -60px -60px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(115, 103, 240, 0.28), transparent 70%);
+            pointer-events: none;
+        }
+
+        .login-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.85rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.01em;
+        }
+
+        .login-brand__mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #7367f0, #9c93ff);
+            box-shadow: 0 0.45rem 1rem rgba(115, 103, 240, 0.32);
+        }
+
+        .login-copy {
+            max-width: 360px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-kicker {
+            display: inline-block;
+            padding: 0.4rem 0.7rem;
+            border-radius: 999px;
+            background: rgba(115, 103, 240, 0.18);
+            color: #d8d3ff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .login-copy h1 {
+            color: #fff;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            line-height: 1.08;
+            margin-bottom: 1rem;
+        }
+
+        .login-copy p,
+        .login-meta {
+            color: rgba(255, 255, 255, 0.74);
+        }
+
+        .login-points {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1.35rem;
+        }
+
+        .login-point {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.86);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .login-point i {
+            color: #cfc9ff;
+        }
+
+        .login-panel {
+            padding: 2.75rem 2.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: rgba(255, 255, 255, 0.92);
         }
 
-        .login-card {
-            width: 400px;
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        .login-panel__inner {
+            width: min(100%, 360px);
         }
 
-        .btn-primary {
-            background-color: #667eea;
-            border: none;
+        .login-panel__inner h2 {
+            font-size: 1.65rem;
+            margin-bottom: 0.4rem;
         }
 
-            .btn-primary:hover {
-                background-color: #5a67d8;
+        .login-panel__inner p {
+            color: var(--app-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .login-input {
+            position: relative;
+        }
+
+        .login-input i {
+            position: absolute;
+            left: 0.95rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--app-muted);
+            font-size: 0.9rem;
+        }
+
+        .login-input .form-control {
+            min-height: 46px;
+            padding-left: 2.65rem;
+            border-radius: 0.85rem;
+        }
+
+        .login-submit {
+            min-height: 46px;
+            border-radius: 0.85rem;
+            font-weight: 700;
+        }
+
+        .login-meta {
+            font-size: 0.84rem;
+            margin-top: 1.5rem;
+        }
+
+        @@media (max-width: 991.98px) {
+            .login-shell {
+                grid-template-columns: 1fr;
             }
+
+            .login-showcase {
+                min-height: 260px;
+                padding: 2rem;
+            }
+
+            .login-panel {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            body {
+                padding: 1rem;
+            }
+
+            .login-showcase,
+            .login-panel {
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="card login-card">
-        <div class="card-body p-5">
-            <div class="text-center mb-4">
-                <h3 class="fw-bold text-dark">Trafo Test</h3>
-                <p class="text-muted">Lütfen kimlik bilgilerinizle giriş yapın.</p>
+    <div class="login-shell">
+        <section class="login-showcase">
+            <div class="login-brand">
+                <span class="login-brand__mark">
+                    <i class="fa-solid fa-bolt"></i>
+                </span>
             </div>
 
-            <form asp-action="Login" method="post">
-                <div class="mb-3">
-                    <label class="form-label">Kullanıcı Adı</label>
-                    <input type="text" name="username" class="form-control" required autofocus>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Şifre</label>
-                    <input type="password" name="password" class="form-control" placeholder="****" required>
-                </div>
+            <div class="login-copy">
+                <span class="login-kicker">TrafoTest</span>
+                <h1>Test ve analiz akışını sade bir merkezden yönetin.</h1>
+                <p>Kayıt, karşılaştırma ve kullanıcı işlemlerini tek bir operasyonda toplu ve düzenli şekilde yönetin.</p>
 
-                @if (ViewBag.Error != null)
-                {
-                    <div class="alert alert-danger py-2 small" role="alert">
-                        @ViewBag.Error
+                <div class="login-points">
+                    <span class="login-point"><i class="fa-solid fa-chart-line"></i> Analiz odaklı</span>
+                    <span class="login-point"><i class="fa-solid fa-table-list"></i> Tek ekran akışı</span>
+                </div>
+            </div>
+
+            <div class="login-meta">Trafo Test Analiz ve Takip Sistemi</div>
+        </section>
+
+        <section class="login-panel">
+            <div class="login-panel__inner">
+                <h2 class="fw-bold">Giriş Yap</h2>
+                <p>Hesabınızla oturum açın ve panele devam edin.</p>
+
+                <form asp-action="Login" method="post" autocomplete="off">
+                    <input type="text" name="fake-username" autocomplete="username" tabindex="-1" class="d-none" aria-hidden="true">
+                    <input type="password" name="fake-password" autocomplete="current-password" tabindex="-1" class="d-none" aria-hidden="true">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kullanıcı Adı</label>
+                        <div class="login-input">
+                            <i class="fa-regular fa-user"></i>
+                            <input type="text" name="username" class="form-control" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" required autofocus>
+                        </div>
                     </div>
-                }
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Şifre</label>
+                        <div class="login-input">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" name="password" class="form-control" autocomplete="off" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');" placeholder="****" required>
+                        </div>
+                    </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-2 mt-3 fw-bold">Giriş Yap</button>
-            </form>
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger py-2 small border-0" role="alert">
+                            @ViewBag.Error
+                        </div>
+                    }
+
+                    <button type="submit" class="btn btn-primary w-100 login-submit mt-3">Giriş Yap</button>
+                </form>
+            </div>
         </div>
     </div>
 </body>

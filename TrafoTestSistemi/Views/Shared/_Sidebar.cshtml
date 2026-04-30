@@ -1,0 +1,55 @@
+@{
+    var controller = (ViewContext.RouteData.Values["controller"]?.ToString() ?? "").ToLowerInvariant();
+    var action = (ViewContext.RouteData.Values["action"]?.ToString() ?? "").ToLowerInvariant();
+
+    string ActiveIf(string c, string? a = null)
+    {
+        var isActive = controller == c.ToLowerInvariant() && (a == null || action == a.ToLowerInvariant());
+        return isActive ? "active" : "";
+    }
+}
+
+<aside class="app-sidebar" data-app-sidebar>
+    <div class="app-sidebar__header">
+        <a class="app-brand" asp-controller="TrafoTests" asp-action="Index">
+            <span class="app-brand__symbol">
+                <i class="fa-solid fa-bolt"></i>
+            </span>
+            <span class="app-brand__meta">
+                <strong>TrafoTest</strong>
+            </span>
+        </a>
+
+        <button class="app-sidebar__collapse d-none d-lg-inline-flex" type="button" data-sidebar-toggle aria-label="Menüyü daralt">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <button class="app-sidebar__collapse d-inline-flex d-lg-none" type="button" data-sidebar-mobile-close aria-label="Menüyü kapat">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="app-sidebar__body">
+        <div class="app-sidebar__section">Ana Menü</div>
+        <nav class="app-nav">
+            <a class="app-nav__link @ActiveIf("trafotests", "index")" asp-controller="TrafoTests" asp-action="Index">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Test Sonuçları</span>
+            </a>
+            <a class="app-nav__link @ActiveIf("trafotests", "create")" asp-controller="TrafoTests" asp-action="Create">
+                <i class="fa-solid fa-square-plus"></i>
+                <span>Yeni Test</span>
+            </a>
+            <a class="app-nav__link @ActiveIf("trafotests", "analiz")" asp-controller="TrafoTests" asp-action="Analiz">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Analiz Paneli</span>
+            </a>
+            <a class="app-nav__link @ActiveIf("kullanici")" asp-controller="Kullanici" asp-action="Index">
+                <i class="fa-solid fa-users"></i>
+                <span>Kullanıcı Yönetimi</span>
+            </a>
+        </nav>
+    </div>
+</aside>
+
+<div class="app-sidebar-backdrop" data-sidebar-backdrop></div>

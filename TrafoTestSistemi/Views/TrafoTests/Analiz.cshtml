@@ -3,33 +3,47 @@
 }
 
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-secondary">📊 Trafo Test Analiz Paneli</h2>
-        <a asp-action="Index" class="btn btn-outline-primary btn-sm">← Listeye Dön</a>
+    <div class="app-page-header">
+        <div>
+            <span class="app-page-header__eyebrow">Analiz Paneli</span>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">Listeye Dön</a>
     </div>
 
     <div class="row g-4 mb-5">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-primary text-white pt-3">
-                <div class="card-body text-center">
-                    <h6 class="text-uppercase small">Toplam Yapılan Test</h6>
-                    <h2 class="display-6 fw-bold">@(ViewBag.Toplam ?? 0)</h2>
+            <div class="card app-stat-card app-stat-card--primary">
+                <div class="card-body app-stat-card__body">
+                    <div>
+                        <div class="app-stat-card__label">Toplam Yapılan Test</div>
+                        <p class="app-stat-card__value">@(ViewBag.Toplam ?? 0)</p>
+                        <div class="app-stat-card__subtext">Kayıt altına alınan tüm testler</div>
+                    </div>
+                    <span class="app-stat-card__icon"><i class="fa-solid fa-bolt"></i></span>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-success text-white pt-3">
-                <div class="card-body text-center">
-                    <h6 class="text-uppercase small">Uygun</h6>
-                    <h2 class="display-6 fw-bold">@(ViewBag.Uygun ?? 0)</h2>
+            <div class="card app-stat-card app-stat-card--success">
+                <div class="card-body app-stat-card__body">
+                    <div>
+                        <div class="app-stat-card__label">Uygun</div>
+                        <p class="app-stat-card__value">@(ViewBag.Uygun ?? 0)</p>
+                        <div class="app-stat-card__subtext">Spesifikasyona uyan testler</div>
+                    </div>
+                    <span class="app-stat-card__icon"><i class="fa-solid fa-circle-check"></i></span>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-danger text-white pt-3">
-                <div class="card-body text-center">
-                    <h6 class="text-uppercase small">Uygun Değil</h6>
-                    <h2 class="display-6 fw-bold">@(ViewBag.UygunDegil ?? 0)</h2>
+            <div class="card app-stat-card app-stat-card--danger">
+                <div class="card-body app-stat-card__body">
+                    <div>
+                        <div class="app-stat-card__label">Uygun Değil</div>
+                        <p class="app-stat-card__value">@(ViewBag.UygunDegil ?? 0)</p>
+                        <div class="app-stat-card__subtext">Revizyon veya inceleme isteyen testler</div>
+                    </div>
+                    <span class="app-stat-card__icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
                 </div>
             </div>
         </div>
@@ -37,8 +51,8 @@
 
     <div class="row">
         <div class="col-lg-6 mx-auto">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3">
+            <div class="card app-card-muted">
+                <div class="card-header">
                     <h5 class="card-title mb-0 text-center fw-bold">Uygunluk Dağılımı</h5>
                 </div>
                 <div class="card-body p-4">

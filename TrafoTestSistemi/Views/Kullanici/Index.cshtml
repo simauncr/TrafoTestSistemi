@@ -4,28 +4,29 @@
     ViewData["Title"] = "Kullanıcı Yönetimi";
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-dark fw-bold"><i class="fas fa-users text-primary me-2"></i>Kullanıcı Yönetimi</h2>
+<div class="container-fluid">
+    <div class="app-page-header">
+        <div>
+            <span class="app-page-header__eyebrow">Kullanıcı Yönetimi</span>
+        </div>
         <a asp-action="Create" class="btn btn-primary shadow-sm fw-bold px-4">
-            <i class="fas fa-user-plus me-1"></i> Yeni Kullanıcı Ekle
+            <i class="fa-solid fa-user-plus me-1"></i> Yeni Kullanıcı Ekle
         </a>
     </div>
 
     @if (TempData["Basari"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-            <i class="fas fa-check-circle me-2"></i>@TempData["Basari"]
+            <i class="fa-solid fa-circle-check me-2"></i>@TempData["Basari"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <div class="card shadow border-0 p-3">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-dark text-white">
+    <div class="card app-compact-table">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                <thead>
                     <tr>
                         <th class="ps-4">#</th>
                         <th>Ad Soyad</th>
@@ -45,11 +46,11 @@
                             <td class="text-center pe-4">
                                 <a asp-action="Edit" asp-route-id="@kullanici.Id"
                                    class="btn btn-sm btn-outline-primary me-1">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
                                 <a asp-action="Delete" asp-route-id="@kullanici.Id"
                                    class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash-alt"></i>
+                                    <i class="fa-solid fa-trash-can"></i>
                                 </a>
                             </td>
                         </tr>
@@ -57,13 +58,17 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">
-                                <i class="fas fa-info-circle me-1"></i> Henüz kayıtlı kullanıcı bulunmamaktadır.
+                            <td colspan="5" class="py-0">
+                                <div class="app-empty-state">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <div>Henüz kayıtlı kullanıcı bulunmamaktadır.</div>
+                                </div>
                             </td>
                         </tr>
                     }
                 </tbody>
-            </table>
+                </table>
+            </div>
         </div>
     </div>
 </div>

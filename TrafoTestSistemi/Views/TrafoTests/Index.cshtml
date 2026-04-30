@@ -2,28 +2,31 @@
 
 @{
     ViewData["Title"] = "Trafo Test Analiz Takip";
+    var aramaMetni = (ViewBag.SearchQuery as string) ?? string.Empty;
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-dark fw-bold"><i class="fas fa-bolt text-warning me-2"></i>Trafo Test Analiz Takip</h2>
+<div class="container-fluid">
+    <div class="app-page-header mb-4">
+        <div>
+            <span class="app-page-header__eyebrow">Trafo Test Analiz Takip</span>
+        </div>
         <div>
             <a asp-action="ExcelIndir" class="btn btn-outline-success shadow-sm me-2 fw-bold">
-                <i class="fas fa-file-excel me-1"></i> Excel Raporu Al
+                <i class="fa-solid fa-file-excel me-1"></i> Excel Raporu Al
             </a>
             <a asp-action="Create" class="btn btn-primary shadow-sm fw-bold px-4">
-                <i class="fas fa-plus me-1"></i> Yeni Test Kaydı Ekle
+                <i class="fa-solid fa-plus me-1"></i> Yeni Test Kaydı Ekle
             </a>
         </div>
     </div>
 
-    <div class="card shadow border-0 p-3">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 w-100" id="trafoTable">
-                <thead class="bg-dark text-white">
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 w-100" id="trafoTable">
+                <thead>
                     <tr>
                         <th class="ps-4">Proje / Müşteri</th>
                         <th>Tasarım No</th>
@@ -36,22 +39,29 @@
                     </tr>
                 </thead>
                 <tbody></tbody>
-            </table>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
         $(document).ready(function () {
+            const aramaMetni = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(aramaMetni));
+
             $('#trafoTable').DataTable({
                 "ajax": {
                     "url": "/TrafoTests/GetTrafolar",
                     "type": "GET",
+                    "data": function (d) {
+                        if (aramaMetni) {
+                            d.q = aramaMetni;
+                        }
+                    },
                     "datatype": "json"
                 },
                 "columns": [
@@ -67,7 +77,7 @@
                     {
                         "data": "tasarimNo",
                         "render": function (data) {
-                            return `<span class="badge bg-light text-dark border">${data}</span>`;
+                            return `<span class="badge bg-body-tertiary text-body border">${data}</span>`;
                         }
                     },
                     { "data": "guc", "className": "text-center fw-bold" },
@@ -111,10 +121,10 @@
                             return `
                                 <div class="btn-group shadow-sm">
                                     <a href="/TrafoTests/Edit/${data}" class="btn btn-sm btn-outline-primary" title="Düzenle">
-                                        <i class="fas fa-edit"></i>
+                                        <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
                                     <a href="/TrafoTests/Delete/${data}" class="btn btn-sm btn-outline-danger" title="Sil" onclick="return confirm('Bu kaydı silmek istediğinize emin misiniz?')">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fa-solid fa-trash"></i>
                                     </a>
                                 </div>`;
                         },

@@ -13,69 +13,155 @@
 <style>
     .required-label::after {
         content: " *";
-        color: red;
+        color: #ea5455;
         font-weight: bold;
     }
 
     .table-xs {
-        font-size: 0.7rem;
+        font-size: 0.72rem;
     }
 
         .table-xs input, .table-xs select {
-            font-size: 0.7rem !important;
-            padding: 2px 4px !important;
-            height: auto !important;
+            font-size: 0.72rem !important;
+            padding: 0.28rem 0.45rem !important;
+            min-height: 34px !important;
             text-align: center;
         }
 
+    .trafo-form-shell {
+        display: block;
+    }
+
+    .trafo-form-shell .table-responsive {
+        border: 1px solid var(--app-border);
+        border-top: 0;
+        border-bottom-left-radius: 0.9rem;
+        border-bottom-right-radius: 0.9rem;
+        background: var(--app-surface);
+        box-shadow: 0 0.35rem 1rem rgba(161, 172, 184, 0.12);
+        overflow: hidden;
+    }
+
+    .trafo-panel {
+        margin-bottom: 1.25rem;
+    }
+
+    .trafo-panel summary {
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .trafo-panel summary::-webkit-details-marker {
+        display: none;
+    }
+
     .bg-sapma {
-        background-color: #f8f9fa;
+        background-color: var(--app-surface-muted);
         font-weight: bold;
     }
 
     .section-title {
-        font-size: 0.75rem;
+        font-size: 0.76rem;
         font-weight: bold;
         text-transform: uppercase;
         margin-bottom: 0px;
-        padding: 6px;
-        background-color: #343a40;
-        color: #fff;
-        border: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(180deg, rgba(var(--app-primary-rgb), 0.12), rgba(var(--app-primary-rgb), 0.06));
+        color: var(--app-heading);
+        border: 1px solid var(--app-border);
         border-bottom: none;
+        border-top-left-radius: 0.9rem;
+        border-top-right-radius: 0.9rem;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .section-title::after {
+        content: "\f107";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        font-size: 0.9rem;
+        color: var(--app-primary);
+        transition: transform .18s ease;
+    }
+
+    .trafo-panel[open] .section-title::after {
+        transform: rotate(180deg);
+    }
+
+    .trafo-panel:not([open]) .section-title {
+        border-bottom: 1px solid var(--app-border);
+        border-radius: 0.9rem;
+    }
+
+    .trafo-panel:not([open]) .table-responsive {
+        display: none;
     }
 
     .table-bordered td, .table-bordered th {
-        border: 1px solid #dee2e6 !important;
+        border: 1px solid var(--app-border) !important;
     }
 
-    .mb-custom {
-        margin-bottom: 1rem;
+    .table-xs thead th {
+        background: rgba(var(--app-primary-rgb), 0.05);
+    }
+
+    .table-xs tbody td:first-child {
+        background: rgba(var(--app-primary-rgb), 0.028);
+    }
+
+    .trafo-form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.1rem;
+        border: 1px solid var(--app-border);
+        border-radius: 0.9rem;
+        background: rgba(var(--app-primary-rgb), 0.035);
+        box-shadow: 0 0.35rem 1rem rgba(161, 172, 184, 0.08);
+    }
+
+    .trafo-form-actions__meta {
+        color: var(--app-muted);
+        font-size: 0.84rem;
+        max-width: 520px;
     }
 
     .out-ht-warning {
-        background-color: #ffc107 !important;
-        color: black !important;
+        background-color: rgba(var(--bs-warning-rgb), 0.25) !important;
+        color: var(--app-heading) !important;
         font-weight: bold;
     }
 
     .out-ht-green {
-        background-color: #28a745 !important;
-        color: white !important;
+        background-color: rgba(var(--bs-success-rgb), 0.85) !important;
+        color: var(--bs-white) !important;
         font-weight: bold;
     }
 
     .out-ht-red {
-        background-color: #dc3545 !important;
-        color: white !important;
+        background-color: rgba(var(--bs-danger-rgb), 0.85) !important;
+        color: var(--bs-white) !important;
         font-weight: bold;
+    }
+
+    @@media (max-width: 991.98px) {
+        .trafo-form-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
     }
 </style>
 
-<div class="section-title">1. Genel Bilgiler</div>
-<div class="table-responsive mb-custom">
-    <table class="table table-sm table-bordered table-xs bg-white mb-0">
-        <thead class="table-light">
+<details class="trafo-panel" open>
+<summary class="section-title">1. Genel Bilgiler</summary>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-xs mb-0">
+        <thead>
             <tr>
                 <th class="required-label">Proje Adı</th>
                 <th class="required-label">Tasarım No</th>
@@ -105,11 +191,13 @@
         </tbody>
     </table>
 </div>
+</details>
 
-<div class="section-title">2. Dizayn Bilgileri</div>
-<div class="table-responsive mb-custom">
-    <table class="table table-sm table-bordered table-xs bg-white mb-0">
-        <thead class="table-light">
+<details class="trafo-panel" open>
+<summary class="section-title">2. Dizayn Bilgileri</summary>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-xs mb-0">
+        <thead>
             <tr>
                 <th class="required-label">Güç (kVA)</th>
                 <th class="required-label">YG Gerilim</th>
@@ -158,11 +246,13 @@
         </tbody>
     </table>
 </div>
+</details>
 
-<div class="section-title">3. Sargı Geometrisi</div>
-<div class="table-responsive mb-custom">
-    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0" id="sargiTable">
-        <thead class="table-light">
+<details class="trafo-panel">
+<summary class="section-title">3. Sargı Geometrisi</summary>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center table-xs mb-0" id="sargiTable">
+        <thead>
             <tr>
                 <th rowspan="3" class="align-middle">Bölüm</th>
                 <th data-colspan-oval="4" data-colspan-yuvarlak="2" colspan="4">Hesap (mm)</th>
@@ -233,11 +323,13 @@
         </tbody>
     </table>
 </div>
+</details>
 
-<div class="section-title">4. Ağırlık Bilgileri (kg)</div>
-<div class="table-responsive mb-custom">
-    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
-        <thead class="table-light">
+<details class="trafo-panel">
+<summary class="section-title">4. Ağırlık Bilgileri (kg)</summary>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center table-xs mb-0">
+        <thead>
             <tr>
                 <th style="width: 25%;">Açıklama</th>
                 <th style="width: 25%;">Hesap</th>
@@ -273,16 +365,18 @@
         </tbody>
     </table>
 </div>
+</details>
 
-<div class="section-title">5. Kayıp Değerleri</div>
-<div class="table-responsive mb-custom">
-    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
-        <thead class="table-light">
+<details class="trafo-panel">
+<summary class="section-title">5. Kayıp Değerleri</summary>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center table-xs mb-0">
+        <thead>
             <tr><th>Kategori</th><th>Garanti / Tolerans</th><th>Hesap</th><th>Test</th><th>Sapma GH</th><th>Sapma GT</th><th>Sapma HT</th></tr>
         </thead>
         <tbody>
             <tr class="calc-row">
-                <td class="fw-bold bg-light text-start">P0 Boşta Kayıp</td>
+                <td class="fw-bold bg-body-tertiary text-start">P0 Boşta Kayıp</td>
                 <td class="d-flex border-0"><input asp-for="P0_Garanti" class="form-control me-1 val-garanti numeric-input" /><input asp-for="P0_Tolerans" class="form-control val-tolerans numeric-input" /></td>
                 <td><input asp-for="P0_Hesap" class="form-control val-hesap numeric-input" /></td>
                 <td><input asp-for="P0_Test" class="form-control val-test numeric-input" /></td>
@@ -291,7 +385,7 @@
                 <td><input asp-for="P0_Sapma_HT" class="form-control out-ht" readonly /></td>
             </tr>
             <tr class="calc-row">
-                <td class="fw-bold bg-light text-start">Pk Yükte Kayıp</td>
+                <td class="fw-bold bg-body-tertiary text-start">Pk Yükte Kayıp</td>
                 <td class="d-flex border-0"><input asp-for="Pk_Garanti" class="form-control me-1 val-garanti numeric-input" /><input asp-for="Pk_Tolerans" class="form-control val-tolerans numeric-input" /></td>
                 <td><input asp-for="Pk_Hesap" class="form-control val-hesap numeric-input" /></td>
                 <td><input asp-for="Pk_Test" class="form-control val-test numeric-input" /></td>
@@ -300,7 +394,7 @@
                 <td><input asp-for="Pk_Sapma_HT" class="form-control out-ht" readonly /></td>
             </tr>
             <tr class="calc-row">
-                <td class="fw-bold bg-light text-start">UK Kısa Devre</td>
+                <td class="fw-bold bg-body-tertiary text-start">UK Kısa Devre</td>
                 <td class="d-flex border-0"><input asp-for="Uk_Garanti" class="form-control me-1 val-garanti numeric-input" /><input asp-for="Uk_Tolerans" class="form-control val-tolerans numeric-input" /></td>
                 <td><input asp-for="Uk_Hesap" class="form-control val-hesap numeric-input" /></td>
                 <td><input asp-for="Uk_Test" class="form-control val-test numeric-input" /></td>
@@ -311,16 +405,18 @@
         </tbody>
     </table>
 </div>
+</details>
 
-<div class="section-title">6. Sıcaklık Değerleri</div>
-<div class="table-responsive mb-custom">
-    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
-        <thead class="table-light">
+<details class="trafo-panel">
+<summary class="section-title">6. Sıcaklık Değerleri</summary>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center table-xs mb-0">
+        <thead>
             <tr><th>Kategori</th><th>Garanti</th><th>Hesap</th><th>Test</th><th>Sapma GH</th><th>Sapma GT</th><th>Sapma HT</th></tr>
         </thead>
         <tbody>
             <tr class="calc-row">
-                <td class="fw-bold bg-light text-start">AG Gradient</td>
+                <td class="fw-bold bg-body-tertiary text-start">AG Gradient</td>
                 <td><input asp-for="AG_Grad_Garanti" class="form-control val-garanti numeric-input" /></td>
                 <td><input asp-for="AG_Grad_Hesap" class="form-control val-hesap numeric-input" /></td>
                 <td><input asp-for="AG_Grad_Test" class="form-control val-test numeric-input" /></td>
@@ -329,7 +425,7 @@
                 <td><input asp-for="AG_Grad_Sapma_HT" class="form-control out-ht" readonly /></td>
             </tr>
             <tr class="calc-row">
-                <td class="fw-bold bg-light text-start">YG Gradient</td>
+                <td class="fw-bold bg-body-tertiary text-start">YG Gradient</td>
                 <td><input asp-for="YG_Grad_Garanti" class="form-control val-garanti numeric-input" /></td>
                 <td><input asp-for="YG_Grad_Hesap" class="form-control val-hesap numeric-input" /></td>
                 <td><input asp-for="YG_Grad_Test" class="form-control val-test numeric-input" /></td>
@@ -338,7 +434,7 @@
                 <td><input asp-for="YG_Grad_Sapma_HT" class="form-control out-ht" readonly /></td>
             </tr>
             <tr class="calc-row">
-                <td class="fw-bold bg-light text-start">AG Sargı Isınması</td>
+                <td class="fw-bold bg-body-tertiary text-start">AG Sargı Isınması</td>
                 <td><input asp-for="AG_SargiIsinma_Garanti" class="form-control val-garanti numeric-input" /></td>
                 <td><input asp-for="AG_SargiIsinma_Hesap" class="form-control val-hesap numeric-input" /></td>
                 <td><input asp-for="AG_SargiIsinma_Test" class="form-control val-test numeric-input" /></td>
@@ -347,7 +443,7 @@
                 <td><input asp-for="AG_SargiIsinma_Sapma_HT" class="form-control out-ht" readonly /></td>
             </tr>
             <tr class="calc-row">
-                <td class="fw-bold bg-light text-start">YG Sargı Isınması</td>
+                <td class="fw-bold bg-body-tertiary text-start">YG Sargı Isınması</td>
                 <td><input asp-for="YG_SargiIsinma_Garanti" class="form-control val-garanti numeric-input" /></td>
                 <td><input asp-for="YG_SargiIsinma_Hesap" class="form-control val-hesap numeric-input" /></td>
                 <td><input asp-for="YG_SargiIsinma_Test" class="form-control val-test numeric-input" /></td>
@@ -358,16 +454,18 @@
         </tbody>
     </table>
 </div>
+</details>
 
-<div class="section-title">7. Kazan Değerleri</div>
-<div class="table-responsive mb-custom">
-    <table class="table table-sm table-bordered text-center table-xs bg-white mb-0">
-        <thead class="table-light">
+<details class="trafo-panel">
+<summary class="section-title">7. Kazan Değerleri</summary>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center table-xs mb-0">
+        <thead>
             <tr><th>Kategori</th><th>Elektrik Garan.</th><th>Mek. Hesap</th><th>Test</th><th>Sapma EG.H</th><th>Sapma MG.T</th><th>Sapma MH.T</th></tr>
         </thead>
         <tbody>
             <tr class="calc-row">
-                <td class="fw-bold bg-light text-start">P55 Bilgisi</td>
+                <td class="fw-bold bg-body-tertiary text-start">P55 Bilgisi</td>
                 <td><input asp-for="P55_ElekGaran" class="form-control val-garanti numeric-input" /></td>
                 <td><input asp-for="P55_MekHesap" class="form-control val-hesap numeric-input" /></td>
                 <td><input asp-for="P55_Test" class="form-control val-test numeric-input" /></td>
@@ -378,6 +476,7 @@
         </tbody>
     </table>
 </div>
+</details>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

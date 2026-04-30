@@ -6,87 +6,32 @@
     <title>@ViewData["Title"] - Trafo Test Sistemi</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-        }
-
-        .navbar {
-            box-shadow: 0 2px 4px rgba(0,0,0,.08);
-        }
-
-        .nav-link {
-            fw-bold;
-            margin-right: 15px;
-        }
-
-            .nav-link:hover {
-                color: #0d6efd !important;
-            }
-    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom mb-3">
-            <div class="container">
-                <a class="navbar-brand fw-bold text-primary" asp-controller="TrafoTests" asp-action="Index">
-                    ⚡ Trafo Takip
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="TrafoTests" asp-action="Index">Trafo Listesi</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="TrafoTests" asp-action="Analiz">📊 Analiz Raporu</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="TrafoTests" asp-action="Create">➕ Yeni Test</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Kullanici" asp-action="Index">👤 Kullanıcı Yönetimi</a>
-                        </li>
-                    </ul>
+    <div class="app-shell">
+        @await Html.PartialAsync("_Sidebar")
 
-                    <ul class="navbar-nav align-items-center gap-2">
-                        @{
-                            var aktifKullanici = Context.Session.GetString("User");
-                        }
-                        <li class="nav-item">
-                            <span class="text-muted small">
-                                <i class="fa-solid fa-circle-user me-1"></i>
-                                @(string.IsNullOrEmpty(aktifKullanici) ? "Ziyaretçi" : aktifKullanici)
-                            </span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-danger btn-sm" asp-controller="Account" asp-action="Logout">Güvenli Çıkış</a>
-                        </li>
-                    </ul>
+        <div class="app-main">
+            @await Html.PartialAsync("_Topbar")
+
+            <main class="app-content" role="main">
+                <div class="app-page container-fluid">
+                    @RenderBody()
                 </div>
-            </div>
-        </nav>
-    </header>
+            </main>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted bg-white py-3 mt-5">
-        <div class="container text-center">
-            &copy; @DateTime.Now.Year - Trafo Test Analiz ve Takip Sistemi
+            <footer class="app-footer">
+                <div class="container-fluid d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                    <span>&copy; @DateTime.Now.Year Trafo Test Analiz ve Takip Sistemi</span>
+                </div>
+            </footer>
         </div>
-    </footer>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

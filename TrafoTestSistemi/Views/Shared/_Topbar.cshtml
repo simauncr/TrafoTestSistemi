@@ -1,0 +1,49 @@
+@{
+    var aktifKullanici = Context.Session.GetString("User");
+    var userText = string.IsNullOrWhiteSpace(aktifKullanici) ? "Ziyaretçi" : aktifKullanici;
+    var aramaMetni = Context.Request.Query["q"].ToString();
+}
+
+<header class="app-topbar">
+    <div class="app-topbar__right">
+        <form class="app-search" method="get" asp-controller="TrafoTests" asp-action="Index" role="search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="search" name="q" value="@aramaMetni" placeholder="Ara: proje, müşteri, tasarım no" autocomplete="off" />
+        </form>
+
+        <div class="app-topbar__cluster">
+            <div class="app-topbar__actions">
+                <button class="btn app-icon-btn" type="button" data-theme-toggle aria-label="Açık koyu tema değiştir">
+                    <i class="fa-solid fa-moon" data-theme-icon></i>
+                </button>
+            </div>
+
+            <div class="dropdown app-profile-dropdown">
+                <button class="btn app-profile-trigger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="app-profile">
+                        <div class="app-profile__avatar">@userText.Substring(0, 1).ToUpperInvariant()</div>
+                        <div class="app-profile__meta d-none d-md-flex">
+                            <strong>@userText</strong>
+                            <small>Operasyon Kullanıcısı</small>
+                        </div>
+                    </div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end app-profile-menu">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
+                            <i class="fa-solid fa-key"></i>
+                            <span>Şifre Değiştir</span>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                        <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>
