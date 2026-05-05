@@ -1,5 +1,7 @@
 ﻿@{
     Layout = null;
+    var submittedUsername = ViewBag.Username as string ?? string.Empty;
+    var submittedPassword = ViewBag.Password as string ?? string.Empty;
 }
 <!DOCTYPE html>
 <html lang="tr">
@@ -250,14 +252,14 @@
                         <label class="form-label fw-semibold">Kullanıcı Adı</label>
                         <div class="login-input">
                             <i class="fa-regular fa-user"></i>
-                            <input type="text" name="username" class="form-control" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" required autofocus>
+                            <input type="text" name="username" value="@submittedUsername" class="form-control" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" required autofocus>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Şifre</label>
                         <div class="login-input">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" name="password" class="form-control" autocomplete="off" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');" placeholder="****" required>
+                            <input type="password" name="password" value="@submittedPassword" class="form-control" autocomplete="off" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');" placeholder="****" required>
                         </div>
                     </div>
 

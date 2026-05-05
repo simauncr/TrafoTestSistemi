@@ -753,6 +753,12 @@ a {
   background: rgba(var(--app-primary-rgb), 0.018);
 }
 
+.app-row-removing {
+  opacity: 0;
+  transform: translateX(12px);
+  transition: opacity 230ms ease, transform 230ms ease;
+}
+
 .form-control,
 .form-select {
   border: 1px solid var(--app-border);

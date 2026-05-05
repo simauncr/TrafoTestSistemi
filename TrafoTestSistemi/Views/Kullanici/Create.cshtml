@@ -11,14 +11,18 @@
             <h5 class="mb-0 fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Yeni Kullanıcı Ekle</h5>
         </div>
         <div class="card-body p-4">
-            <form asp-action="Create" method="post" id="kullaniciForm" novalidate>
+            <form asp-action="Create" method="post" id="kullaniciForm" novalidate autocomplete="off">
                 @Html.AntiForgeryToken()
+                <input type="text" name="fake-name" autocomplete="name" tabindex="-1" class="d-none" aria-hidden="true">
+                <input type="email" name="fake-email" autocomplete="email" tabindex="-1" class="d-none" aria-hidden="true">
+                <input type="text" name="fake-username" autocomplete="username" tabindex="-1" class="d-none" aria-hidden="true">
+                <input type="password" name="fake-password" autocomplete="new-password" tabindex="-1" class="d-none" aria-hidden="true">
 
                 <div class="mb-3">
                     <label asp-for="AdSoyad" class="form-label fw-semibold"></label>
                     <div class="input-group">
                         <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-user text-muted"></i></span>
-                        <input asp-for="AdSoyad" class="form-control" placeholder="Ad ve soyadı giriniz" />
+                        <input asp-for="AdSoyad" class="form-control" placeholder="Ad ve soyadı giriniz" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" />
                     </div>
                     <span asp-validation-for="AdSoyad" class="text-danger small"></span>
                 </div>
@@ -27,7 +31,7 @@
                     <label asp-for="Email" class="form-label fw-semibold"></label>
                     <div class="input-group">
                         <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-envelope text-muted"></i></span>
-                        <input asp-for="Email" class="form-control" placeholder="E-posta adresini giriniz" />
+                        <input asp-for="Email" type="text" class="form-control" placeholder="E-posta adresini giriniz" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="email" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');" />
                     </div>
                     <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
@@ -36,7 +40,7 @@
                     <label asp-for="KullaniciAdi" class="form-label fw-semibold"></label>
                     <div class="input-group">
                         <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-id-badge text-muted"></i></span>
-                        <input asp-for="KullaniciAdi" class="form-control" placeholder="Kullanıcı adını giriniz" />
+                        <input asp-for="KullaniciAdi" class="form-control" placeholder="Kullanıcı adını giriniz" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" />
                     </div>
                     <span asp-validation-for="KullaniciAdi" class="text-danger small"></span>
                 </div>
@@ -45,7 +49,7 @@
                     <label asp-for="Sifre" class="form-label fw-semibold"></label>
                     <div class="input-group">
                         <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-lock text-muted"></i></span>
-                        <input asp-for="Sifre" type="password" class="form-control" placeholder="Şifre giriniz" />
+                        <input asp-for="Sifre" type="password" class="form-control" placeholder="Şifre giriniz" autocomplete="off" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');" />
                     </div>
                     <span asp-validation-for="Sifre" class="text-danger small"></span>
                 </div>

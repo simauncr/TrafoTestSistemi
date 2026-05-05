@@ -32,6 +32,8 @@ namespace TrafoTestSistemi.Controllers
             }
 
             ViewBag.Error = "Kullanıcı adı veya şifre hatalı!";
+            ViewBag.Username = username;
+            ViewBag.Password = password;
             return View();
         }
 

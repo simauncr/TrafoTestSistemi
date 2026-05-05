@@ -92,12 +92,23 @@ namespace TrafoTestSistemi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var isAjax = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
             var kullanici = await _context.Kullanicilar.FindAsync(id);
             if (kullanici != null)
             {
                 _context.Kullanicilar.Remove(kullanici);
                 await _context.SaveChangesAsync();
                 TempData["Basari"] = "Kullanıcı başarıyla silindi.";
+
+                if (isAjax)
+                {
+                    return Ok(new { success = true, message = "Kullanıcı silindi." });
+                }
+            }
+
+            if (isAjax)
+            {
+                return NotFound(new { success = false, message = "Silinecek kullanıcı bulunamadı." });
             }
 
             return RedirectToAction(nameof(Index));

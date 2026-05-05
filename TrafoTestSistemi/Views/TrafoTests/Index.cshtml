@@ -7,8 +7,9 @@
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
 
-<div class="container-fluid">
-    <div class="app-page-header mb-4">
+<div class="container-fluid mt-3">
+    @Html.AntiForgeryToken()
+    <div class="app-page-header mb-3">
         <div>
             <span class="app-page-header__eyebrow">Trafo Test Analiz Takip</span>
         </div>
@@ -52,6 +53,7 @@
     <script>
         $(document).ready(function () {
             const aramaMetni = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(aramaMetni));
+            const deleteAnimationMs = 230;
 
             $('#trafoTable').DataTable({
                 "ajax": {
@@ -123,9 +125,9 @@
                                     <a href="/TrafoTests/Edit/${data}" class="btn btn-sm btn-outline-primary" title="Düzenle">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    <a href="/TrafoTests/Delete/${data}" class="btn btn-sm btn-outline-danger" title="Sil" onclick="return confirm('Bu kaydı silmek istediğinize emin misiniz?')">
+                                    <button type="button" class="btn btn-sm btn-outline-danger js-delete-trafo" title="Sil" data-id="${data}">
                                         <i class="fa-solid fa-trash"></i>
-                                    </a>
+                                    </button>
                                 </div>`;
                         },
                         "orderable": false
@@ -138,6 +140,62 @@
                 "order": [[0, "desc"]],
                 "drawCallback": function() {
                     $(".dataTables_paginate > .pagination").addClass("pagination-sm");
+                }
+            });
+
+            $('#trafoTable').on('click', '.js-delete-trafo', async function () {
+                const $button = $(this);
+                const id = $(this).data('id');
+                const token = $('input[name="__RequestVerificationToken"]').first().val();
+
+                const result = await Swal.fire({
+                    icon: 'warning',
+                    title: 'Kaydı sil?',
+                    text: 'Bu işlem geri alınamaz.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sil',
+                    cancelButtonText: 'Vazgeç'
+                });
+
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/TrafoTests/Delete/${id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'RequestVerificationToken': token,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: `__RequestVerificationToken=${encodeURIComponent(token)}`
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok || !payload.success) {
+                        throw new Error(payload.message || 'Silme işlemi sırasında hata oluştu.');
+                    }
+
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Silindi',
+                        text: payload.message,
+                        timer: 1400,
+                        showConfirmButton: false
+                    });
+
+                    const $row = $button.closest('tr');
+                    $row.addClass('app-row-removing');
+                    await new Promise(resolve => setTimeout(resolve, deleteAnimationMs));
+
+                    $('#trafoTable').DataTable().ajax.reload(null, false);
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata',
+                        text: error.message || 'Silme işlemi sırasında hata oluştu.'
+                    });
                 }
             });
         });

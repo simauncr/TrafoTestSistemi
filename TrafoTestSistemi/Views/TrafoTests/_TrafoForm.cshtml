@@ -1,14 +1,22 @@
 ﻿@model TrafoTestSistemi.Models.TrafoTest
+@{
+    var muhendisSecenekleri = new List<string>();
+    var seciliElektrikMuhendisi = Model?.ElektrikMuhendisiAdSoyad ?? string.Empty;
+    var seciliMekanikMuhendisi = Model?.MekanikMuhendisiAdSoyad ?? string.Empty;
 
-<datalist id="muh-list">
-    @if (ViewBag.MuhendisListesi != null)
+    if (ViewBag.MuhendisListesi is IEnumerable<string> stringList)
     {
-        foreach (var ad in ViewBag.MuhendisListesi)
-        {
-            <option value="@ad"></option>
-        }
+        muhendisSecenekleri = stringList.ToList();
     }
-</datalist>
+    else if (ViewBag.MuhendisListesi is IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> selectList)
+    {
+        muhendisSecenekleri = selectList
+            .Select(x => x.Value ?? x.Text)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct()
+            .ToList();
+    }
+}
 
 <style>
     .required-label::after {
@@ -180,10 +188,36 @@
                 <td><input asp-for="Musteri" class="form-control" required /></td>
                 <td><input asp-for="DizaynId" class="form-control" /></td>
                 <td>
-                    <input asp-for="ElektrikMuhendisiAdSoyad" class="form-control" list="muh-list" autocomplete="off" required />
+                    <select asp-for="ElektrikMuhendisiAdSoyad" class="form-control" required>
+                        <option value="">-- Seçiniz --</option>
+                        @foreach (var ad in muhendisSecenekleri)
+                        {
+                            if (seciliElektrikMuhendisi == ad)
+                            {
+                                <option value="@ad" selected>@ad</option>
+                            }
+                            else
+                            {
+                                <option value="@ad">@ad</option>
+                            }
+                        }
+                    </select>
                 </td>
                 <td>
-                    <input asp-for="MekanikMuhendisiAdSoyad" class="form-control" list="muh-list" autocomplete="off" required />
+                    <select asp-for="MekanikMuhendisiAdSoyad" class="form-control" required>
+                        <option value="">-- Seçiniz --</option>
+                        @foreach (var ad in muhendisSecenekleri)
+                        {
+                            if (seciliMekanikMuhendisi == ad)
+                            {
+                                <option value="@ad" selected>@ad</option>
+                            }
+                            else
+                            {
+                                <option value="@ad">@ad</option>
+                            }
+                        }
+                    </select>
                 </td>
                 <td><input asp-for="DizaynTarihi" type="date" class="form-control" required /></td>
                 <td><input asp-for="TestTarihi" type="date" class="form-control" required /></td>

@@ -123,7 +123,7 @@ namespace TrafoTestSistemi.Controllers
         public IActionResult Create()
         {
             YukleSelectListler();
-            return View();
+            return View(new TrafoTest());
         }
 
         [HttpPost]
@@ -254,12 +254,24 @@ namespace TrafoTestSistemi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var isAjax = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
             var trafo = await _context.TestKayitlari.FindAsync(id);
             if (trafo != null)
             {
                 _context.TestKayitlari.Remove(trafo);
                 await _context.SaveChangesAsync();
+
+                if (isAjax)
+                {
+                    return Ok(new { success = true, message = "Kayıt silindi." });
+                }
             }
+
+            if (isAjax)
+            {
+                return NotFound(new { success = false, message = "Silinecek kayıt bulunamadı." });
+            }
+
             return RedirectToAction(nameof(Index));
 
         }
@@ -295,14 +307,32 @@ namespace TrafoTestSistemi.Controllers
             ViewBag.SacCinsleri = _context.SacCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
             ViewBag.KazanCinsleri = _context.KazanCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
             ViewBag.YagCinsleri = _context.YagCinsleri.OrderBy(x => x.Id).Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = x.Id.ToString(), Text = x.Ad }).ToList();
-            ViewBag.MuhendisListesi = _context.Muhendisler.OrderBy(x => x.AdSoyad).Select(x => x.AdSoyad).ToList();
+            ViewBag.MuhendisListesi = _context.Kullanicilar
+                .OrderBy(x => x.AdSoyad)
+                .Select(x => x.AdSoyad)
+                .Distinct()
+                .Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = x,
+                    Text = x
+                })
+                .ToList();
         }
 
         private async Task SetMuhendisIdsAsync(TrafoTest trafoTest)
         {
+            var kullaniciAdlari = await _context.Kullanicilar
+                .Select(x => x.AdSoyad)
+                .Distinct()
+                .ToListAsync();
+
             if (string.IsNullOrWhiteSpace(trafoTest.ElektrikMuhendisiAdSoyad))
             {
                 ModelState.AddModelError(nameof(TrafoTest.ElektrikMuhendisiAdSoyad), "Elektrik mühendisi zorunludur.");
+            }
+            else if (!kullaniciAdlari.Contains(trafoTest.ElektrikMuhendisiAdSoyad.Trim()))
+            {
+                ModelState.AddModelError(nameof(TrafoTest.ElektrikMuhendisiAdSoyad), "Elektrik mühendisi listeden seçilmelidir.");
             }
             else
             {
@@ -312,6 +342,10 @@ namespace TrafoTestSistemi.Controllers
             if (string.IsNullOrWhiteSpace(trafoTest.MekanikMuhendisiAdSoyad))
             {
                 ModelState.AddModelError(nameof(TrafoTest.MekanikMuhendisiAdSoyad), "Mekanik mühendisi zorunludur.");
+            }
+            else if (!kullaniciAdlari.Contains(trafoTest.MekanikMuhendisiAdSoyad.Trim()))
+            {
+                ModelState.AddModelError(nameof(TrafoTest.MekanikMuhendisiAdSoyad), "Mekanik mühendisi listeden seçilmelidir.");
             }
             else
             {
