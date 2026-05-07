@@ -599,29 +599,35 @@
             const gar = getVal(".val-garanti");
             const hes = getVal(".val-hesap");
             const tst = getVal(".val-test");
+            const testVar = tst !== null && tst > 0;
             const tolInput = row.find(".val-tolerans");
             let tolPercent = tolInput.length > 0 ? (parseFloat(tolInput.val()?.toString().replace(',', '.')) || 0) : null;
 
             if (gar !== null && gar !== 0) {
                 if(hes !== null) row.find(".out-gh").val(((hes - gar) / gar * 100).toFixed(2));
-                if(tst !== null) row.find(".out-gt").val(((tst - gar) / gar * 100).toFixed(2));
+                if(testVar) {
+                    row.find(".out-gt").val(((tst - gar) / gar * 100).toFixed(2));
+                } else {
+                    row.find(".out-gt").val("0.00");
+                }
             }
 
             const htInput = row.find(".out-ht");
-            if (hes !== null && tst !== null && hes !== 0) {
-                const ht = ((tst - hes) / hes * 100).toFixed(2);
+            if (hes !== null && hes !== 0) {
+                const ht = testVar
+                    ? ((tst - hes) / hes * 100).toFixed(2)
+                    : (gar !== null && gar !== 0 ? ((hes - gar) / gar * 100).toFixed(2) : "0.00");
                 htInput.val(ht);
 
                 if (tolPercent !== null) {
-                    const limitMiktari = Math.abs(hes * (tolPercent / 100));
-                    const farkMiktari = Math.abs(tst - hes);
-                    if (farkMiktari > limitMiktari) {
+                    const sapmaDegeri = Math.abs(parseFloat(ht) || 0);
+                    if (sapmaDegeri > Math.abs(tolPercent)) {
                         htInput.removeClass("out-ht-green").addClass("out-ht-red");
                     } else {
                         htInput.removeClass("out-ht-red").addClass("out-ht-green");
                     }
                 } else {
-                    if (gar !== null && tst > gar) {
+                    if (gar !== null && testVar && tst > gar) {
                         htInput.removeClass("out-ht-green").addClass("out-ht-red");
                     } else {
                         htInput.removeClass("out-ht-red").addClass("out-ht-green");

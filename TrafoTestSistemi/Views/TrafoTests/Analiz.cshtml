@@ -25,25 +25,20 @@
                 <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--yesil" id="filtreTemizleBtn">
                     <i class="fa-solid fa-broom me-1"></i>Filtreleri Temizle
                 </button>
+                <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--ghost" id="kayitliTablolarBtn">
+                    <i class="fa-solid fa-bookmark me-1"></i>Kayıtlı Tablolarım
+                </button>
             </div>
         </div>
         <div class="card-body p-3 p-lg-4">
-            <div class="row g-3 align-items-start">
+            <div class="row g-3 align-items-start" id="analizCalismaAlani">
                 <div class="col-12 col-xl-2">
                     <div class="pivot-panel-card pivot-fields-card">
                         <div class="pivot-panel-card__title-wrap">
                             <div class="pivot-panel-card__title">Alan Listesi</div>
                             <small class="pivot-panel-card__hint">Bir hedef kutu seçin, alanı tıklayın veya sürükleyin.</small>
                         </div>
-
-                        <div class="pivot-target-toggle" id="pivotTargetToggle">
-                            <button type="button" class="pivot-target-toggle__btn is-active" data-target-zone="rows">Satırlar</button>
-                            <button type="button" class="pivot-target-toggle__btn" data-target-zone="columns">Sütunlar</button>
-                            <button type="button" class="pivot-target-toggle__btn" data-target-zone="values">Değerler</button>
-                            <button type="button" class="pivot-target-toggle__btn" data-target-zone="filters">Filtreler</button>
-                        </div>
-
-                        <div class="pivot-field-groups mt-3">
+                        <div class="pivot-field-groups mt-2">
                             <div class="pivot-field-group">
                                 <div class="pivot-field-group__label">Boyut Alanları</div>
                                 <div class="pivot-field-list" id="dimensionFields"></div>
@@ -59,13 +54,13 @@
                 <div class="col-12 col-xl-10">
                     <div class="pivot-panel-card pivot-dropstrip-card mb-3">
                         <div class="pivot-zone-grid">
-                            <div class="pivot-zone" data-zone="columns">
-                                <div class="pivot-zone__title"><i class="fa-solid fa-table-columns"></i>Sütunlar</div>
-                                <div class="pivot-zone__drop" id="zone-columns"></div>
-                            </div>
                             <div class="pivot-zone" data-zone="rows">
                                 <div class="pivot-zone__title"><i class="fa-solid fa-list"></i>Satırlar</div>
                                 <div class="pivot-zone__drop" id="zone-rows"></div>
+                            </div>
+                            <div class="pivot-zone" data-zone="columns">
+                                <div class="pivot-zone__title"><i class="fa-solid fa-table-columns"></i>Sütunlar</div>
+                                <div class="pivot-zone__drop" id="zone-columns"></div>
                             </div>
                             <div class="pivot-zone" data-zone="filters">
                                 <div class="pivot-zone__title"><i class="fa-solid fa-filter"></i>Filtreler</div>
@@ -116,6 +111,11 @@
                                 <div class="table-responsive" id="pivotTableHolder" style="display:none;">
                                     <table class="table table-sm align-middle mb-0 pivot-result-table" id="pivotResultTable"></table>
                                 </div>
+                                <div class="pivot-save-row">
+                                    <button type="button" class="pivot-save-mini" id="pivotKaydetBtn" title="Pivot tabloyu kaydet" style="display:none;">
+                                        <i class="fa-solid fa-floppy-disk"></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="pivot-view-panel pivot-view-panel--chart" id="pivotChartPanel">
@@ -132,6 +132,19 @@
 
                     </div>
                 </div>
+            </div>
+
+            <div class="pivot-saved-page" id="kayitliTablolarSayfasi" style="display:none;">
+                <div class="pivot-saved-page__header">
+                    <div>
+                        <h6 class="mb-1 fw-bold">Kayıtlı Pivot Tablolarım</h6>
+                    </div>
+                    <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--lila" id="analizeDonBtn">
+                        <i class="fa-solid fa-arrow-left me-1"></i>Analize Dön
+                    </button>
+                </div>
+
+                <div class="pivot-saved-page__body" id="kayitliTablolarListe"></div>
             </div>
         </div>
     </div>
@@ -203,6 +216,18 @@
         .pivot-action-btn--lila:hover {
             background: rgba(var(--app-primary-rgb), 0.22);
             color: var(--app-heading);
+        }
+
+        .pivot-action-btn--ghost {
+            background: transparent;
+            color: var(--app-heading);
+            border-color: rgba(var(--app-primary-rgb), 0.35);
+        }
+
+        .pivot-action-btn--ghost:hover {
+            background: rgba(var(--app-primary-rgb), 0.34);
+            color: var(--app-heading);
+            border-color: rgba(var(--app-primary-rgb), 0.66);
         }
 
         .pivot-action-btn--yesil {
@@ -288,27 +313,6 @@
             font-size: 0.78rem;
         }
 
-        .pivot-target-toggle {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.45rem;
-        }
-
-        .pivot-target-toggle__btn {
-            border: 1px solid rgba(var(--app-primary-rgb), 0.24);
-            border-radius: 9px;
-            background: rgba(var(--app-primary-rgb), 0.05);
-            color: var(--app-heading);
-            font-weight: 600;
-            font-size: 0.82rem;
-            padding: 0.45rem 0.6rem;
-        }
-
-        .pivot-target-toggle__btn.is-active {
-            background: rgba(var(--app-primary-rgb), 0.2);
-            border-color: rgba(var(--app-primary-rgb), 0.42);
-        }
-
         .pivot-field-group__label {
             text-transform: uppercase;
             font-size: 0.72rem;
@@ -340,6 +344,10 @@
         .pivot-dropstrip-card {
             background: linear-gradient(180deg, rgba(var(--app-primary-rgb), 0.07), rgba(var(--app-primary-rgb), 0.03));
             border-color: rgba(var(--app-primary-rgb), 0.22);
+        }
+
+        .pivot-fields-card .pivot-panel-card__title-wrap {
+            margin-bottom: 0.3rem;
         }
 
         .pivot-zone-grid {
@@ -396,6 +404,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.38rem;
+            cursor: grab;
         }
 
         .pivot-tag__meta {
@@ -424,6 +433,20 @@
             flex-direction: column;
         }
 
+        #analizCalismaAlani.pivot-kayit-odak > .col-12.col-xl-2 {
+            display: none;
+        }
+
+        #analizCalismaAlani.pivot-kayit-odak > .col-12.col-xl-10 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        #analizCalismaAlani.pivot-kayit-odak .pivot-report-actions,
+        #analizCalismaAlani.pivot-kayit-odak .pivot-save-row {
+            display: none;
+        }
+
         .pivot-view-stage {
             position: relative;
             overflow: hidden;
@@ -434,6 +457,10 @@
             inset: 0;
             transition: transform 0.34s ease, opacity 0.34s ease;
             background: #fff;
+        }
+
+        .pivot-view-panel--table {
+            position: relative;
         }
 
         .pivot-view-panel--table {
@@ -458,7 +485,10 @@
         }
 
         #pivotTableHolder {
-            overflow: visible;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 0.2rem;
         }
 
         .pivot-report-actions {
@@ -531,6 +561,8 @@
             --bs-table-hover-bg: #f5f4fc;
             --bs-table-border-color: rgba(115, 103, 240, 0.12);
             margin: 0;
+            min-width: 1100px;
+            width: max-content;
         }
 
         .pivot-result-table th,
@@ -550,6 +582,170 @@
             font-size: 0.71rem;
             font-weight: 700;
             white-space: normal;
+        }
+
+        .pivot-save-row {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0.4rem 0.6rem 0.6rem;
+            background: #fff;
+        }
+
+        .pivot-save-mini {
+            width: 34px;
+            height: 34px;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.35);
+            border-radius: 8px;
+            background: rgba(var(--app-primary-rgb), 0.12);
+            color: var(--app-heading);
+            box-shadow: 0 0.25rem 0.75rem rgba(115, 103, 240, 0.16);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .pivot-save-mini:hover {
+            background: rgba(var(--app-primary-rgb), 0.22);
+        }
+
+        .pivot-saved-page {
+            border: 1px solid var(--app-border);
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 0.25rem 0.7rem rgba(161, 172, 184, 0.1);
+            overflow: hidden;
+        }
+
+        .pivot-saved-page__header {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid var(--app-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            background: rgba(var(--app-primary-rgb), 0.06);
+        }
+
+        .pivot-saved-page__body {
+            padding: 0.8rem;
+            display: grid;
+            gap: 0.6rem;
+            max-height: 64vh;
+            overflow-y: auto;
+        }
+
+        .pivot-saved-item {
+            border: 1px solid rgba(var(--app-primary-rgb), 0.2);
+            border-radius: 10px;
+            padding: 0.75rem 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            background: rgba(var(--app-primary-rgb), 0.04);
+        }
+
+        .pivot-saved-item__title {
+            font-weight: 700;
+            color: var(--app-heading);
+        }
+
+        .pivot-saved-item__meta {
+            font-size: 0.76rem;
+            color: var(--app-muted);
+            margin-top: 0.18rem;
+        }
+
+        .pivot-saved-item__actions {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .swal2-popup.pivot-swal {
+            background: linear-gradient(180deg, #ffffff, #fcfcff);
+            border: 1px solid rgba(231, 231, 239, 0.82);
+            border-radius: 20px;
+            box-shadow: 0 1.1rem 2.6rem rgba(31, 39, 48, 0.12);
+            padding: 1.35rem 1.35rem 1.15rem;
+        }
+
+        .swal2-actions.pivot-swal-actions {
+            gap: 0.45rem;
+            margin-top: 1rem;
+        }
+
+        .swal2-title.pivot-swal-title {
+            color: #444050;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .swal2-popup.pivot-swal .swal2-input-label {
+            color: rgba(var(--app-primary-rgb), 0.9);
+            font-weight: 600;
+            margin: 0.3rem 0 0.42rem;
+        }
+
+        .swal2-input.pivot-swal-input {
+            border: 1px solid rgba(var(--app-primary-rgb), 0.3);
+            border-radius: var(--app-radius-sm);
+            min-height: 38px;
+            background-color: var(--app-surface);
+            color: var(--app-text);
+            box-shadow: none;
+            font-size: 0.9375rem;
+            padding: 0.58rem 0.78rem;
+        }
+
+        .swal2-input.pivot-swal-input:focus {
+            border-color: rgba(var(--app-primary-rgb), 0.52);
+            box-shadow: 0 0 0 0.2rem rgba(var(--app-primary-rgb), 0.18), 0 0.35rem 0.9rem rgba(var(--app-primary-rgb), 0.12);
+        }
+
+        .swal2-confirm.pivot-swal-confirm {
+            background: #28c76f !important;
+            color: #fff !important;
+            border: 1px solid #28c76f !important;
+            border-radius: 0.625rem !important;
+            font-weight: 700 !important;
+            min-height: 36px !important;
+            min-width: 94px !important;
+            padding: 0.42rem 1.02rem !important;
+            box-shadow: 0 0.3rem 0.8rem rgba(40, 199, 111, 0.24) !important;
+        }
+
+        .swal2-confirm.pivot-swal-confirm:hover {
+            background: #24b865 !important;
+            border-color: #24b865 !important;
+        }
+
+        .swal2-cancel.pivot-swal-cancel {
+            background: var(--app-surface) !important;
+            color: #444050 !important;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.26) !important;
+            border-radius: 0.625rem !important;
+            font-weight: 600 !important;
+            min-height: 36px !important;
+            min-width: 94px !important;
+            padding: 0.42rem 1.02rem !important;
+            box-shadow: none !important;
+        }
+
+        .swal2-cancel.pivot-swal-cancel:hover {
+            background: var(--app-surface-muted) !important;
+            border-color: rgba(var(--app-primary-rgb), 0.36) !important;
+        }
+
+        :root[data-bs-theme="dark"] .swal2-popup.pivot-swal {
+            border-color: rgba(58, 61, 88, 0.95);
+            background: var(--app-surface);
+        }
+
+        :root[data-bs-theme="dark"] .swal2-popup.pivot-swal .swal2-input-label {
+            color: #bdb6ff;
         }
 
         .pivot-th-top {
@@ -735,6 +931,235 @@
             const chartPanel = document.getElementById("pivotChartPanel");
             const chartCanvas = document.getElementById("pivotChartCanvas");
             const tabloyaDonBtn = document.getElementById("tabloyaDonBtn");
+            const analizCalismaAlani = document.getElementById("analizCalismaAlani");
+            const kayitliTablolarBtn = document.getElementById("kayitliTablolarBtn");
+            const kayitliTablolarSayfasi = document.getElementById("kayitliTablolarSayfasi");
+            const kayitliTablolarListe = document.getElementById("kayitliTablolarListe");
+            const analizeDonBtn = document.getElementById("analizeDonBtn");
+            const pivotKaydetBtn = document.getElementById("pivotKaydetBtn");
+
+            function kayitliTablolarButonunuAyarla(geriDonModu) {
+                if (geriDonModu) {
+                    kayitliTablolarBtn.dataset.mode = "geri-don";
+                    kayitliTablolarBtn.innerHTML = "<i class='fa-solid fa-arrow-left me-1'></i>Geri Dön";
+                    return;
+                }
+
+                kayitliTablolarBtn.dataset.mode = "liste";
+                kayitliTablolarBtn.innerHTML = "<i class='fa-solid fa-bookmark me-1'></i>Kayıtlı Tablolarım";
+            }
+
+            function escapeHtml(text) {
+                return String(text || "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\"/g, "&quot;")
+                    .replace(/'/g, "&#39;");
+            }
+
+            function mevcutKonfigOlustur() {
+                return {
+                    rows: [...state.rows],
+                    columns: [...state.columns],
+                    filters: [...state.filters],
+                    values: state.values.map(v => ({ key: v.key, agg: v.agg })),
+                    filterValues: { ...state.filterValues },
+                    options: {
+                        showGrandTotals: !!state.options.showGrandTotals,
+                        compactRows: !!state.options.compactRows,
+                        decimalPlaces: Number(state.options.decimalPlaces)
+                    }
+                };
+            }
+
+            function konfigUygula(konfig) {
+                if (!konfig) {
+                    return;
+                }
+
+                const diziTemizle = (dizi, tur) => (Array.isArray(dizi) ? dizi : [])
+                    .filter(k => fieldMeta[k] && (!tur || fieldMeta[k].type === tur));
+
+                state.rows = diziTemizle(konfig.rows, "dimension");
+                state.columns = diziTemizle(konfig.columns, "dimension");
+                state.filters = diziTemizle(konfig.filters, "dimension");
+
+                state.values = (Array.isArray(konfig.values) ? konfig.values : [])
+                    .filter(v => v && fieldMeta[v.key] && ["sum", "avg", "count", "min", "max"].includes(v.agg))
+                    .map(v => ({ key: v.key, agg: v.agg }));
+
+                state.filterValues = {};
+                if (konfig.filterValues && typeof konfig.filterValues === "object") {
+                    Object.keys(konfig.filterValues).forEach(key => {
+                        if (state.filters.includes(key)) {
+                            state.filterValues[key] = konfig.filterValues[key];
+                        }
+                    });
+                }
+
+                if (konfig.options && typeof konfig.options === "object") {
+                    state.options.showGrandTotals = konfig.options.showGrandTotals !== false;
+                    state.options.compactRows = !!konfig.options.compactRows;
+                    state.options.decimalPlaces = Number.isFinite(Number(konfig.options.decimalPlaces))
+                        ? Number(konfig.options.decimalPlaces)
+                        : 2;
+                }
+
+                document.getElementById("showGrandTotals").checked = state.options.showGrandTotals;
+                document.getElementById("compactRows").checked = state.options.compactRows;
+                document.getElementById("decimalPlaces").value = String(state.options.decimalPlaces);
+
+                renderZoneTags();
+                renderFilterInputs();
+                setView("table");
+                buildPivot();
+            }
+
+            function kayitliTabloOdakModuAyarla(aktif) {
+                analizCalismaAlani.classList.toggle("pivot-kayit-odak", !!aktif);
+                kayitliTablolarButonunuAyarla(!!aktif);
+                syncStageHeight();
+            }
+
+            function analizGorunumunuAc(sadeceKayitliTablo = false) {
+                analizCalismaAlani.style.display = "flex";
+                kayitliTablolarSayfasi.style.display = "none";
+                kayitliTabloOdakModuAyarla(!!sadeceKayitliTablo);
+            }
+
+            function kayitliTablolarGorunumunuAc() {
+                analizCalismaAlani.style.display = "none";
+                kayitliTablolarSayfasi.style.display = "block";
+                kayitliTabloOdakModuAyarla(false);
+            }
+
+            async function kayitliTablolariGetir() {
+                const response = await fetch("/TrafoTests/KayitliPivotTablolar", {
+                    method: "GET",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+
+                const payload = await response.json();
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || "Kayıtlı tablolar alınamadı.");
+                }
+
+                return payload.data || [];
+            }
+
+            async function kayitliTablolariListele() {
+                kayitliTablolarListe.innerHTML = "<div class='text-muted small'>Yükleniyor...</div>";
+
+                try {
+                    const liste = await kayitliTablolariGetir();
+                    if (!liste.length) {
+                        kayitliTablolarListe.innerHTML = "<div class='text-muted small'>Henüz kayıtlı pivot tablo bulunmuyor.</div>";
+                        return;
+                    }
+
+                    kayitliTablolarListe.innerHTML = liste.map(item => `
+                        <div class="pivot-saved-item" data-kayit-id="${item.id}">
+                            <div>
+                                <div class="pivot-saved-item__title">${escapeHtml(item.ad)}</div>
+                                <div class="pivot-saved-item__meta">${escapeHtml(item.olusturan || "Sistem")} • ${escapeHtml(item.olusturmaTarihi || "")}</div>
+                            </div>
+                            <div class="pivot-saved-item__actions">
+                                <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--lila js-pivot-yukle">Görüntüle</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger js-pivot-sil">Sil</button>
+                            </div>
+                        </div>
+                    `).join("");
+
+                    kayitliTablolarListe.querySelectorAll(".js-pivot-yukle").forEach(btn => {
+                        btn.addEventListener("click", async function () {
+                            const kayitId = Number(btn.closest("[data-kayit-id]").dataset.kayitId);
+                            if (!Number.isFinite(kayitId) || kayitId <= 0) {
+                                return;
+                            }
+                            try {
+                                await pivotTabloYukle(kayitId);
+                            } catch (error) {
+                                await Swal.fire({
+                                    icon: "error",
+                                    title: "Hata",
+                                    text: error.message || "Kayıt yüklenemedi."
+                                });
+                            }
+                        });
+                    });
+
+                    kayitliTablolarListe.querySelectorAll(".js-pivot-sil").forEach(btn => {
+                        btn.addEventListener("click", async function () {
+                            const kayitId = Number(btn.closest("[data-kayit-id]").dataset.kayitId);
+                            try {
+                                await pivotTabloSil(kayitId);
+                            } catch (error) {
+                                await Swal.fire({
+                                    icon: "error",
+                                    title: "Hata",
+                                    text: error.message || "Kayıt silinemedi."
+                                });
+                            }
+                        });
+                    });
+                } catch (error) {
+                    kayitliTablolarListe.innerHTML = `<div class='text-danger small'>${escapeHtml(error.message || "Kayıtlar alınamadı.")}</div>`;
+                }
+            }
+
+            async function pivotTabloYukle(id) {
+                const response = await fetch(`/TrafoTests/PivotTabloDetay?id=${id}`, {
+                    method: "GET",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+
+                const payload = await response.json();
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || "Kayıt yüklenemedi.");
+                }
+
+                const detay = payload.data || {};
+                const konfigJson = detay.konfigJson || detay.KonfigJson;
+                if (!konfigJson) {
+                    throw new Error("Kayıtlı tablo içeriği bulunamadı.");
+                }
+
+                const konfig = JSON.parse(konfigJson);
+                konfigUygula(konfig);
+                analizGorunumunuAc(true);
+            }
+
+            async function pivotTabloSil(id) {
+                const onay = await Swal.fire({
+                    icon: "warning",
+                    title: "Kayıt silinsin mi?",
+                    text: "Bu işlem geri alınamaz.",
+                    showCancelButton: true,
+                    confirmButtonText: "Sil",
+                    cancelButtonText: "Vazgeç"
+                });
+
+                if (!onay.isConfirmed) {
+                    return;
+                }
+
+                const response = await fetch("/TrafoTests/PivotTabloSil", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: JSON.stringify({ id })
+                });
+
+                const payload = await response.json();
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || "Silme işlemi başarısız.");
+                }
+
+                await kayitliTablolariListele();
+            }
 
             function syncStageHeight() {
                 const activePanel = viewStage.classList.contains("is-chart") ? chartPanel : tablePanel;
@@ -1049,16 +1474,6 @@
                 });
             }
 
-            function bindTargetToggle() {
-                document.querySelectorAll(".pivot-target-toggle__btn").forEach(btn => {
-                    btn.addEventListener("click", () => {
-                        document.querySelectorAll(".pivot-target-toggle__btn").forEach(x => x.classList.remove("is-active"));
-                        btn.classList.add("is-active");
-                        state.targetZone = btn.dataset.targetZone;
-                    });
-                });
-            }
-
             function addFieldToZone(fieldKey, zone) {
                 if (!fieldMeta[fieldKey] || !zone) {
                     return;
@@ -1100,6 +1515,15 @@
                 buildPivot();
             }
 
+            function moveFieldBetweenZones(fromZone, toZone, fieldKey) {
+                if (!fromZone || !toZone || !fieldKey || fromZone === toZone) {
+                    return;
+                }
+
+                removeFieldFromZone(fromZone, fieldKey);
+                addFieldToZone(fieldKey, toZone);
+            }
+
             function renderZoneTags() {
                 Object.keys(zones).forEach(zoneName => {
                     zones[zoneName].innerHTML = "";
@@ -1117,6 +1541,17 @@
                         const fieldKey = zoneName === "values" ? item.key : item;
                         const wrap = document.createElement("span");
                         wrap.className = "pivot-tag";
+                        wrap.draggable = true;
+                        wrap.dataset.field = fieldKey;
+                        wrap.dataset.zone = zoneName;
+
+                        wrap.addEventListener("dragstart", ev => {
+                            ev.dataTransfer.setData("application/json", JSON.stringify({
+                                fieldKey,
+                                fromZone: zoneName
+                            }));
+                            ev.dataTransfer.setData("text/plain", fieldKey);
+                        });
 
                         const title = document.createElement("span");
                         title.textContent = fieldMeta[fieldKey].label;
@@ -1154,6 +1589,10 @@
                     const zoneName = zoneEl.dataset.zone;
                     const dropArea = zoneEl.querySelector(".pivot-zone__drop");
 
+                    zoneEl.addEventListener("click", () => {
+                        state.targetZone = zoneName;
+                    });
+
                     dropArea.addEventListener("dragover", ev => {
                         ev.preventDefault();
                         dropArea.classList.add("is-over");
@@ -1166,6 +1605,18 @@
                     dropArea.addEventListener("drop", ev => {
                         ev.preventDefault();
                         dropArea.classList.remove("is-over");
+                        const payloadRaw = ev.dataTransfer.getData("application/json");
+                        if (payloadRaw) {
+                            try {
+                                const payload = JSON.parse(payloadRaw);
+                                if (payload?.fieldKey && payload?.fromZone) {
+                                    moveFieldBetweenZones(payload.fromZone, zoneName, payload.fieldKey);
+                                    return;
+                                }
+                            } catch {
+                            }
+                        }
+
                         const fieldKey = ev.dataTransfer.getData("text/plain");
                         if (!isValidZoneForField(fieldKey, zoneName)) {
                             return;
@@ -1309,6 +1760,7 @@
                 if (!state.rows.length || !state.values.length) {
                     table.innerHTML = "";
                     tableHolder.style.display = "none";
+                    pivotKaydetBtn.style.display = "none";
                     emptyState.style.display = "block";
                     state.chartModel = null;
                     setView("table");
@@ -1320,6 +1772,7 @@
                 if (!filtered.length) {
                     table.innerHTML = "";
                     tableHolder.style.display = "none";
+                    pivotKaydetBtn.style.display = "none";
                     emptyState.style.display = "block";
                     emptyState.querySelector("h6").textContent = "Seçili filtrelerle eşleşen kayıt bulunamadı";
                     state.chartModel = null;
@@ -1417,6 +1870,7 @@
                 html += "</tbody>";
                 table.innerHTML = html;
                 tableHolder.style.display = "block";
+                pivotKaydetBtn.style.display = "inline-flex";
                 emptyState.style.display = "none";
                 state.chartModel = chartModel;
 
@@ -1446,6 +1900,7 @@
             }
 
             document.getElementById("filtreTemizleBtn").addEventListener("click", function () {
+                kayitliTabloOdakModuAyarla(false);
                 state.rows = [];
                 state.columns = [];
                 state.values = [];
@@ -1454,6 +1909,102 @@
                 renderZoneTags();
                 renderFilterInputs();
                 buildPivot();
+            });
+
+            kayitliTablolarBtn.addEventListener("click", async function () {
+                const mod = kayitliTablolarBtn.dataset.mode || "liste";
+                kayitliTablolarGorunumunuAc();
+                if (mod === "geri-don") {
+                    await kayitliTablolariListele();
+                    return;
+                }
+                await kayitliTablolariListele();
+            });
+
+            analizeDonBtn.addEventListener("click", function () {
+                analizGorunumunuAc();
+            });
+
+            pivotKaydetBtn.addEventListener("click", async function () {
+                try {
+                    if (!table.tHead || !table.tBodies.length || !state.rows.length || !state.values.length) {
+                        await Swal.fire({
+                            icon: "info",
+                            title: "Kaydedilecek tablo yok",
+                            text: "Önce bir pivot tablo oluşturun."
+                        });
+                        return;
+                    }
+
+                    const result = await Swal.fire({
+                        title: "Pivot Tabloyu Kaydet",
+                        input: "text",
+                        inputLabel: "Tablo adı",
+                        showCancelButton: true,
+                        confirmButtonText: "Kaydet",
+                        cancelButtonText: "Vazgeç",
+                        buttonsStyling: false,
+                        customClass: {
+                            popup: "pivot-swal",
+                            title: "pivot-swal-title",
+                            input: "pivot-swal-input",
+                            actions: "pivot-swal-actions",
+                            confirmButton: "pivot-swal-confirm",
+                            cancelButton: "pivot-swal-cancel"
+                        },
+                        showClass: {
+                            popup: "",
+                            backdrop: ""
+                        },
+                        hideClass: {
+                            popup: ""
+                        },
+                        inputValidator: value => {
+                            if (!value || !value.trim()) {
+                                return "Tablo adı zorunludur.";
+                            }
+                            if (value.trim().length > 150) {
+                                return "Tablo adı en fazla 150 karakter olabilir.";
+                            }
+                            return null;
+                        }
+                    });
+
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+
+                    const response = await fetch("/TrafoTests/KaydetPivotTablo", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Requested-With": "XMLHttpRequest"
+                        },
+                        body: JSON.stringify({
+                            tabloAdi: result.value.trim(),
+                            konfigJson: JSON.stringify(mevcutKonfigOlustur())
+                        })
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok || !payload.success) {
+                        throw new Error(payload.message || "Kaydetme işlemi başarısız.");
+                    }
+
+                    await Swal.fire({
+                        icon: "success",
+                        title: "Kaydedildi",
+                        text: payload.message || "Pivot tablo kaydedildi.",
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+                } catch (error) {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Hata",
+                        text: error.message || "Pivot tablo kaydedilemedi."
+                    });
+                }
             });
 
             document.getElementById("applyOzelBtn").addEventListener("click", function () {
@@ -1517,9 +2068,8 @@
             });
 
             renderFieldLists();
-            bindTargetToggle();
             setupDropZones();
-            applyDefaultSetup();
+            kayitliTablolarButonunuAyarla(false);
             window.addEventListener("resize", syncStageHeight);
         });
     </script>

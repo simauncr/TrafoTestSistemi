@@ -7,6 +7,7 @@
 	const mobileClose = document.querySelector('[data-sidebar-mobile-close]');
 	const backdrop = document.querySelector('[data-sidebar-backdrop]');
 	const sidebarToggles = document.querySelectorAll('[data-sidebar-toggle]');
+	const sidebarLinks = document.querySelectorAll('[data-app-sidebar] .app-nav__link');
 
 	const themeStorageKey = 'app-theme';
 	const sidebarStorageKey = 'app-sidebar-collapsed';
@@ -90,4 +91,18 @@
 			setSidebarOpen(false);
 		});
 	}
+
+	sidebarLinks.forEach(function (link) {
+		link.addEventListener('click', function () {
+			if (window.matchMedia('(max-width: 991.98px)').matches) {
+				setSidebarOpen(false);
+			}
+		});
+	});
+
+	window.addEventListener('resize', function () {
+		if (window.matchMedia('(min-width: 992px)').matches) {
+			setSidebarOpen(false);
+		}
+	});
 })();

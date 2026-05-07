@@ -6,6 +6,10 @@
 
 <header class="app-topbar">
     <div class="app-topbar__right">
+        <button class="btn app-icon-btn app-mobile-nav-toggle d-lg-none" type="button" data-sidebar-mobile-open aria-label="Menüyü aç">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
         @if (ViewContext.RouteData.Values["controller"]?.ToString() == "TrafoTests" && ViewContext.RouteData.Values["action"]?.ToString() == "Index")
         {
         <form class="app-search" method="get" asp-controller="TrafoTests" asp-action="Index" role="search">

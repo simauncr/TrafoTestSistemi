@@ -200,17 +200,26 @@ namespace TrafoTestSistemi.Models
             YGIletken_Sapma = Math.Round(YGIletken_Test - YGIletken_Hesap, 2);
             Yag_Sapma = Math.Round(Yag_Test - Yag_Hesap, 2);
 
+            var p0TestVar = P0_Test > 0;
             P0_Sapma_GH = P0_Garanti != 0 ? Math.Round((P0_Hesap - P0_Garanti) / P0_Garanti * 100, 2) : 0;
-            P0_Sapma_GT = P0_Garanti != 0 ? Math.Round((P0_Test - P0_Garanti) / P0_Garanti * 100, 2) : 0;
-            P0_Sapma_HT = P0_Hesap != 0 ? Math.Round((P0_Test - P0_Hesap) / P0_Hesap * 100, 2) : 0;
+            P0_Sapma_GT = p0TestVar && P0_Garanti != 0 ? Math.Round((P0_Test - P0_Garanti) / P0_Garanti * 100, 2) : 0;
+            P0_Sapma_HT = p0TestVar && P0_Hesap != 0
+                ? Math.Round((P0_Test - P0_Hesap) / P0_Hesap * 100, 2)
+                : P0_Sapma_GH;
 
+            var pkTestVar = Pk_Test > 0;
             Pk_Sapma_GH = Pk_Garanti != 0 ? Math.Round((Pk_Hesap - Pk_Garanti) / Pk_Garanti * 100, 2) : 0;
-            Pk_Sapma_GT = Pk_Garanti != 0 ? Math.Round((Pk_Test - Pk_Garanti) / Pk_Garanti * 100, 2) : 0;
-            Pk_Sapma_HT = Pk_Hesap != 0 ? Math.Round((Pk_Test - Pk_Hesap) / Pk_Hesap * 100, 2) : 0;
+            Pk_Sapma_GT = pkTestVar && Pk_Garanti != 0 ? Math.Round((Pk_Test - Pk_Garanti) / Pk_Garanti * 100, 2) : 0;
+            Pk_Sapma_HT = pkTestVar && Pk_Hesap != 0
+                ? Math.Round((Pk_Test - Pk_Hesap) / Pk_Hesap * 100, 2)
+                : Pk_Sapma_GH;
 
+            var ukTestVar = Uk_Test > 0;
             Uk_Sapma_GH = Uk_Garanti != 0 ? Math.Round((Uk_Hesap - Uk_Garanti) / Uk_Garanti * 100, 2) : 0;
-            Uk_Sapma_GT = Uk_Garanti != 0 ? Math.Round((Uk_Test - Uk_Garanti) / Uk_Garanti * 100, 2) : 0;
-            Uk_Sapma_HT = Uk_Hesap != 0 ? Math.Round((Uk_Test - Uk_Hesap) / Uk_Hesap * 100, 2) : 0;
+            Uk_Sapma_GT = ukTestVar && Uk_Garanti != 0 ? Math.Round((Uk_Test - Uk_Garanti) / Uk_Garanti * 100, 2) : 0;
+            Uk_Sapma_HT = ukTestVar && Uk_Hesap != 0
+                ? Math.Round((Uk_Test - Uk_Hesap) / Uk_Hesap * 100, 2)
+                : Uk_Sapma_GH;
 
             AG_Grad_Sapma_GH = AG_Grad_Garanti != 0 ? Math.Round((AG_Grad_Hesap - AG_Grad_Garanti) / AG_Grad_Garanti * 100, 2) : 0;
             AG_Grad_Sapma_GT = AG_Grad_Garanti != 0 ? Math.Round((AG_Grad_Test - AG_Grad_Garanti) / AG_Grad_Garanti * 100, 2) : 0;
@@ -232,11 +241,11 @@ namespace TrafoTestSistemi.Models
             P55_Sapma_MGT = P55_ElekGaran != 0 ? Math.Round((P55_Test - P55_ElekGaran) / P55_ElekGaran * 100, 2) : 0;
             P55_Sapma_MHT = P55_MekHesap != 0 ? Math.Round((P55_Test - P55_MekHesap) / P55_MekHesap * 100, 2) : 0;
 
-            bool hataVar = (Math.Abs(P0_Sapma_HT) > P0_Tolerans) ||
-                           (Math.Abs(Pk_Sapma_HT) > Pk_Tolerans) ||
-                           (Math.Abs(Uk_Sapma_HT) > Uk_Tolerans);
+                        bool hataVar = (Math.Abs(P0_Sapma_HT) > P0_Tolerans) ||
+                                                     (Math.Abs(Pk_Sapma_HT) > Pk_Tolerans) ||
+                                                     (Math.Abs(Uk_Sapma_HT) > Uk_Tolerans);
 
-            Sonuc = hataVar ? "UYGUN DEĞİL" : "UYGUN";
+                        Sonuc = hataVar ? "UYGUN DEĞİL" : "UYGUN";
         }
     }
 }
