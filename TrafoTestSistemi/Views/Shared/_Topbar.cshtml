@@ -6,10 +6,13 @@
 
 <header class="app-topbar">
     <div class="app-topbar__right">
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "TrafoTests" && ViewContext.RouteData.Values["action"]?.ToString() == "Index")
+        {
         <form class="app-search" method="get" asp-controller="TrafoTests" asp-action="Index" role="search">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="search" name="q" value="@aramaMetni" placeholder="Ara: proje, müşteri, tasarım no" autocomplete="off" />
         </form>
+        }
 
         <div class="app-topbar__cluster">
             <div class="app-topbar__actions">

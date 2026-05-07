@@ -5,6 +5,7 @@ using ClosedXML.Excel;
 using System.IO;
 using System.Linq;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace TrafoTestSistemi.Controllers
@@ -40,10 +41,58 @@ namespace TrafoTestSistemi.Controllers
 
         public async Task<IActionResult> Analiz()
         {
-            var testler = await _context.TestKayitlari.ToListAsync();
+            var testler = await _context.TestKayitlari
+                .Include(x => x.YagCinsi)
+                .Include(x => x.SacCinsi)
+                .Include(x => x.CekirdekTipi)
+                .Include(x => x.KazanCinsi)
+                .Include(x => x.ElektrikMuhendisi)
+                .Include(x => x.MekanikMuhendisi)
+                .ToListAsync();
+
             ViewBag.Toplam = testler.Count;
             ViewBag.Uygun = testler.Count(x => x.Sonuc != null && x.Sonuc.ToUpper().Trim() == "UYGUN");
             ViewBag.UygunDegil = testler.Count(x => x.Sonuc != null && (x.Sonuc.ToUpper().Trim().Contains("DEĞİL") || x.Sonuc.ToUpper().Trim() == "HATALI"));
+
+            string GucKategorisiOlustur(double guc)
+            {
+                if (guc < 500) return "0-500 kVA";
+                if (guc < 1000) return "500-1000 kVA";
+                if (guc < 2000) return "1000-2000 kVA";
+                if (guc < 5000) return "2000-5000 kVA";
+                return "5000+ kVA";
+            }
+
+            ViewBag.AnalysisRecords = testler
+                .Select(x => new
+                {
+                    x.Id,
+                    Musteri = string.IsNullOrWhiteSpace(x.Musteri) ? "Tanimsiz" : x.Musteri,
+                    ProjeAdi = string.IsNullOrWhiteSpace(x.ProjeAdi) ? "Tanimsiz" : x.ProjeAdi,
+                    TasarimNo = string.IsNullOrWhiteSpace(x.TasarimNo) ? "Tanimsiz" : x.TasarimNo,
+                    DizaynId = string.IsNullOrWhiteSpace(x.DizaynId) ? "Tanimsiz" : x.DizaynId,
+                    MusteriProje = $"{(string.IsNullOrWhiteSpace(x.Musteri) ? "Tanimsiz" : x.Musteri)} / {(string.IsNullOrWhiteSpace(x.ProjeAdi) ? "Tanimsiz" : x.ProjeAdi)}",
+                    DizaynTarihi = x.DizaynTarihi.ToString("yyyy-MM-dd"),
+                    TestTarihi = x.TestTarihi.ToString("yyyy-MM-dd"),
+                    ElektrikMuhendisi = string.IsNullOrWhiteSpace(x.ElektrikMuhendisi!.AdSoyad) ? "Tanimsiz" : x.ElektrikMuhendisi.AdSoyad,
+                    MekanikMuhendisi = x.MekanikMuhendisi == null || string.IsNullOrWhiteSpace(x.MekanikMuhendisi.AdSoyad) ? "Tanimsiz" : x.MekanikMuhendisi.AdSoyad,
+                    Muhendis = string.IsNullOrWhiteSpace(x.ElektrikMuhendisi!.AdSoyad) ? "Tanimsiz" : x.ElektrikMuhendisi.AdSoyad,
+                    x.Guc,
+                    x.GerilimYG,
+                    x.GerilimAG,
+                    x.Frekans,
+                    GucKategorisi = GucKategorisiOlustur(x.Guc),
+                    BaglantiGrubu = string.IsNullOrWhiteSpace(x.BaglantiGrubu) ? "Tanimsiz" : x.BaglantiGrubu,
+                    CekirdekTipi = x.CekirdekTipi == null || string.IsNullOrWhiteSpace(x.CekirdekTipi.Ad) ? "Tanimsiz" : x.CekirdekTipi.Ad,
+                    KazanCinsi = x.KazanCinsi == null || string.IsNullOrWhiteSpace(x.KazanCinsi.Ad) ? "Tanimsiz" : x.KazanCinsi.Ad,
+                    YagCinsi = x.YagCinsi == null || string.IsNullOrWhiteSpace(x.YagCinsi.Ad) ? "Tanimsiz" : x.YagCinsi.Ad,
+                    SacCinsi = x.SacCinsi == null || string.IsNullOrWhiteSpace(x.SacCinsi.Ad) ? "Tanimsiz" : x.SacCinsi.Ad,
+                    P0Sapma = Math.Round(Math.Abs(x.P0_Sapma_HT), 2),
+                    PkSapma = Math.Round(Math.Abs(x.Pk_Sapma_HT), 2),
+                    UkSapma = Math.Round(Math.Abs(x.Uk_Sapma_HT), 2),
+                    Sonuc = string.IsNullOrWhiteSpace(x.Sonuc) ? "BEKLEMEDE" : x.Sonuc
+                })
+                .ToList();
 
             if (ViewBag.Toplam > 0 && (int)ViewBag.Uygun == 0 && (int)ViewBag.UygunDegil == 0)
             {

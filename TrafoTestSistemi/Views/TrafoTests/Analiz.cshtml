@@ -1,5 +1,6 @@
-﻿@{
+@{
     ViewData["Title"] = "Trafo Analiz Raporu";
+    var analysisJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.AnalysisRecords ?? new List<object>());
 }
 
 <div class="container-fluid mt-3">
@@ -7,99 +8,1519 @@
         <div>
             <span class="app-page-header__eyebrow">Analiz Paneli</span>
         </div>
-        <a asp-action="Index" class="btn btn-outline-primary btn-sm">Listeye Dön</a>
     </div>
 
-    <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="card app-stat-card app-stat-card--primary">
-                <div class="card-body app-stat-card__body">
-                    <div>
-                        <div class="app-stat-card__label">Toplam Yapılan Test</div>
-                        <p class="app-stat-card__value">@(ViewBag.Toplam ?? 0)</p>
-                        <div class="app-stat-card__subtext">Kayıt altına alınan tüm testler</div>
-                    </div>
-                    <span class="app-stat-card__icon"><i class="fa-solid fa-bolt"></i></span>
-                </div>
+    <div class="card app-card-muted pivot-modul-shell">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h6 class="mb-1 fw-bold">Kurumsal Dinamik Pivot Analiz Modülü</h6>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--excel" id="excelBtn">
+                    <i class="fa-solid fa-file-excel me-1"></i>Excel
+                </button>
+                <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--pdf" id="pdfBtn">
+                    <i class="fa-solid fa-file-pdf me-1"></i>PDF
+                </button>
+                <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--yesil" id="filtreTemizleBtn">
+                    <i class="fa-solid fa-broom me-1"></i>Filtreleri Temizle
+                </button>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card app-stat-card app-stat-card--success">
-                <div class="card-body app-stat-card__body">
-                    <div>
-                        <div class="app-stat-card__label">Uygun</div>
-                        <p class="app-stat-card__value">@(ViewBag.Uygun ?? 0)</p>
-                        <div class="app-stat-card__subtext">Spesifikasyona uyan testler</div>
-                    </div>
-                    <span class="app-stat-card__icon"><i class="fa-solid fa-circle-check"></i></span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card app-stat-card app-stat-card--danger">
-                <div class="card-body app-stat-card__body">
-                    <div>
-                        <div class="app-stat-card__label">Uygun Değil</div>
-                        <p class="app-stat-card__value">@(ViewBag.UygunDegil ?? 0)</p>
-                        <div class="app-stat-card__subtext">Revizyon veya inceleme isteyen testler</div>
-                    </div>
-                    <span class="app-stat-card__icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                </div>
-            </div>
-        </div>
-    </div>
+        <div class="card-body p-3 p-lg-4">
+            <div class="row g-3 align-items-start">
+                <div class="col-12 col-xl-2">
+                    <div class="pivot-panel-card pivot-fields-card">
+                        <div class="pivot-panel-card__title-wrap">
+                            <div class="pivot-panel-card__title">Alan Listesi</div>
+                            <small class="pivot-panel-card__hint">Bir hedef kutu seçin, alanı tıklayın veya sürükleyin.</small>
+                        </div>
 
-    <div class="row">
-        <div class="col-lg-6 mx-auto">
-            <div class="card app-card-muted">
-                <div class="card-header">
-                    <h5 class="card-title mb-0 text-center fw-bold">Uygunluk Dağılımı</h5>
+                        <div class="pivot-target-toggle" id="pivotTargetToggle">
+                            <button type="button" class="pivot-target-toggle__btn is-active" data-target-zone="rows">Satırlar</button>
+                            <button type="button" class="pivot-target-toggle__btn" data-target-zone="columns">Sütunlar</button>
+                            <button type="button" class="pivot-target-toggle__btn" data-target-zone="values">Değerler</button>
+                            <button type="button" class="pivot-target-toggle__btn" data-target-zone="filters">Filtreler</button>
+                        </div>
+
+                        <div class="pivot-field-groups mt-3">
+                            <div class="pivot-field-group">
+                                <div class="pivot-field-group__label">Boyut Alanları</div>
+                                <div class="pivot-field-list" id="dimensionFields"></div>
+                            </div>
+                            <div class="pivot-field-group mt-3">
+                                <div class="pivot-field-group__label">Sayısal Alanlar</div>
+                                <div class="pivot-field-list" id="measureFields"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <canvas id="trafoPieChart" style="max-height: 350px;"></canvas>
+
+                <div class="col-12 col-xl-10">
+                    <div class="pivot-panel-card pivot-dropstrip-card mb-3">
+                        <div class="pivot-zone-grid">
+                            <div class="pivot-zone" data-zone="columns">
+                                <div class="pivot-zone__title"><i class="fa-solid fa-table-columns"></i>Sütunlar</div>
+                                <div class="pivot-zone__drop" id="zone-columns"></div>
+                            </div>
+                            <div class="pivot-zone" data-zone="rows">
+                                <div class="pivot-zone__title"><i class="fa-solid fa-list"></i>Satırlar</div>
+                                <div class="pivot-zone__drop" id="zone-rows"></div>
+                            </div>
+                            <div class="pivot-zone" data-zone="filters">
+                                <div class="pivot-zone__title"><i class="fa-solid fa-filter"></i>Filtreler</div>
+                                <div class="pivot-zone__drop" id="zone-filters"></div>
+                            </div>
+                            <div class="pivot-zone" data-zone="values">
+                                <div class="pivot-zone__title"><i class="fa-solid fa-square-poll-vertical"></i>Değerler</div>
+                                <div class="pivot-zone__drop" id="zone-values"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pivot-report-wrap" id="pivotReportWrap">
+                        <div class="pivot-report-actions">
+                            <div class="d-flex align-items-center gap-2 ms-auto">
+                                <div class="dropdown" id="aktifFiltreDropdownWrap" style="display:none;">
+                                    <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--lila dropdown-toggle" id="aktifFiltreBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-filter me-1"></i>Filtreler
+                                        <span class="badge rounded-pill text-bg-light ms-1" id="aktifFiltreBadge">0</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 pivot-filter-dropdown-menu" aria-labelledby="aktifFiltreBtn">
+                                        <div class="pivot-filter-dropdown-grid" id="dynamicFilterInputs"></div>
+                                    </div>
+                                </div>
+
+                                <div class="dropdown">
+                                    <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--lila dropdown-toggle" id="grafikGoruntuleBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-chart-column me-1"></i>Grafiği Görüntüle
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><button type="button" class="dropdown-item pivot-chart-option" data-chart-type="bar">Sütun Grafik</button></li>
+                                        <li><button type="button" class="dropdown-item pivot-chart-option" data-chart-type="line">Çizgi Grafik</button></li>
+                                        <li><button type="button" class="dropdown-item pivot-chart-option" data-chart-type="pie">Pasta Grafik</button></li>
+                                        <li><button type="button" class="dropdown-item pivot-chart-option" data-chart-type="doughnut">Halka Grafik</button></li>
+                                        <li><button type="button" class="dropdown-item pivot-chart-option" data-chart-type="radar">Radar Grafik</button></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pivot-view-stage" id="pivotViewStage">
+                            <div class="pivot-view-panel pivot-view-panel--table is-active" id="pivotTablePanel">
+                                <div class="pivot-empty-state" id="pivotEmptyState">
+                                    <i class="fa-solid fa-table-cells-large"></i>
+                                    <h6>Analize başlamak için alanları kutucuklara yerleştirin</h6>
+                                    <p class="mb-0">En az bir Satır, bir Değer ve isteğe bağlı olarak Sütun/Filtre alanı ekleyerek raporu oluşturabilirsiniz.</p>
+                                </div>
+                                <div class="table-responsive" id="pivotTableHolder" style="display:none;">
+                                    <table class="table table-sm align-middle mb-0 pivot-result-table" id="pivotResultTable"></table>
+                                </div>
+                            </div>
+
+                            <div class="pivot-view-panel pivot-view-panel--chart" id="pivotChartPanel">
+                                <div class="pivot-chart-wrap">
+                                    <canvas id="pivotChartCanvas"></canvas>
+                                </div>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--lila" id="tabloyaDonBtn">
+                                        <i class="fa-solid fa-table me-1"></i>Tabloya Dön
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const ctx = document.getElementById('trafoPieChart').getContext('2d');
-            const uygun = @(ViewBag.Uygun ?? 0);
-            const uygunDegil = @(ViewBag.UygunDegil ?? 0);
+<div class="modal fade" id="pivotOzelModal" tabindex="-1" aria-labelledby="pivotOzelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content pivot-modal-content">
+            <div class="modal-header pivot-modal-header">
+                <h6 class="modal-title fw-bold" id="pivotOzelModalLabel">Görünüm Ayarları</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" role="switch" id="showGrandTotals" checked>
+                    <label class="form-check-label" for="showGrandTotals">Genel Toplamları Göster</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" role="switch" id="compactRows">
+                    <label class="form-check-label" for="compactRows">Sıkı Satır Görünümü</label>
+                </div>
+                <label for="decimalPlaces" class="form-label">Ondalık Basamak</label>
+                <select class="form-select" id="decimalPlaces">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--yesil" id="applyOzelBtn">Uygula</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-            if (uygun === 0 && uygunDegil === 0) {
-                ctx.font = "16px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText("Henüz analiz edilecek veri bulunmuyor.", ctx.canvas.width/2, ctx.canvas.height/2);
-            } else {
-                new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: ['Uygun Trafolar', 'Uygun Olmayan Trafolar'],
-                        datasets: [{
-                            data: [uygun, uygunDegil],
-                            backgroundColor: ['#198754', '#dc3545'],
-                            hoverOffset: 15,
-                            borderWidth: 2,
-                            borderColor: '#fff'
-                        }]
+@section Styles {
+    <style>
+        .pivot-modul-shell {
+            border-radius: 12px;
+            border: 1px solid var(--app-border);
+            overflow: hidden;
+            box-shadow: 0 0.45rem 1.2rem rgba(161, 172, 184, 0.16);
+        }
+
+        .pivot-modul-shell .card-header {
+            background: linear-gradient(180deg, rgba(var(--app-primary-rgb), 0.14), rgba(var(--app-primary-rgb), 0.06));
+            border-bottom: 1px solid var(--app-border);
+        }
+
+        .pivot-modul-subtitle {
+            color: var(--app-muted);
+        }
+
+        .pivot-action-btn {
+            border-radius: 10px;
+            font-weight: 700;
+            border: 1px solid transparent;
+            padding-inline: 0.75rem;
+        }
+
+        .pivot-action-btn--lila {
+            background: rgba(var(--app-primary-rgb), 0.12);
+            color: var(--app-heading);
+            border-color: rgba(var(--app-primary-rgb), 0.3);
+        }
+
+        .pivot-action-btn--lila:hover {
+            background: rgba(var(--app-primary-rgb), 0.22);
+            color: var(--app-heading);
+        }
+
+        .pivot-action-btn--yesil {
+            background: #28c76f;
+            color: #fff;
+            border-color: #28c76f;
+        }
+
+        .pivot-action-btn--yesil:hover {
+            background: #24b865;
+            color: #fff;
+        }
+
+        .pivot-action-btn--excel {
+            background: transparent;
+            color: #1d6f42;
+            border-color: #1d6f42;
+        }
+
+        .pivot-action-btn--excel:hover {
+            background: #1d6f42;
+            color: #fff;
+        }
+
+        .pivot-action-btn--pdf {
+            background: transparent;
+            color: #c62828;
+            border-color: #c62828;
+        }
+
+        .pivot-action-btn--pdf:hover {
+            background: #c62828;
+            color: #fff;
+        }
+
+        .pivot-panel-card {
+            border: 1px solid var(--app-border);
+            border-radius: 12px;
+            background: #fff;
+            padding: 0.9rem;
+            box-shadow: 0 0.25rem 0.7rem rgba(161, 172, 184, 0.1);
+        }
+
+        .pivot-fields-card {
+            padding: 0.65rem;
+        }
+
+        .pivot-fields-card .pivot-panel-card__hint {
+            font-size: 0.74rem;
+        }
+
+        .pivot-filter-compact-card {
+            padding: 0.55rem 0.7rem;
+        }
+
+        .pivot-filter-compact-card .pivot-panel-card__title-wrap {
+            margin-bottom: 0.4rem !important;
+        }
+
+        .pivot-filter-compact-card .pivot-panel-card__title {
+            font-size: 0.82rem;
+        }
+
+        .pivot-filter-compact-card .form-label {
+            margin-bottom: 0.18rem !important;
+            font-size: 0.72rem;
+        }
+
+        .pivot-filter-compact-card .form-select {
+            min-height: 30px;
+            padding-top: 0.22rem;
+            padding-bottom: 0.22rem;
+            font-size: 0.79rem;
+        }
+
+        .pivot-panel-card__title {
+            font-weight: 700;
+            color: var(--app-heading);
+        }
+
+        .pivot-panel-card__hint {
+            color: var(--app-muted);
+            font-size: 0.78rem;
+        }
+
+        .pivot-target-toggle {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.45rem;
+        }
+
+        .pivot-target-toggle__btn {
+            border: 1px solid rgba(var(--app-primary-rgb), 0.24);
+            border-radius: 9px;
+            background: rgba(var(--app-primary-rgb), 0.05);
+            color: var(--app-heading);
+            font-weight: 600;
+            font-size: 0.82rem;
+            padding: 0.45rem 0.6rem;
+        }
+
+        .pivot-target-toggle__btn.is-active {
+            background: rgba(var(--app-primary-rgb), 0.2);
+            border-color: rgba(var(--app-primary-rgb), 0.42);
+        }
+
+        .pivot-field-group__label {
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--app-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pivot-field-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            min-height: 42px;
+        }
+
+        .pivot-field-item {
+            border: 1px solid rgba(var(--app-primary-rgb), 0.26);
+            border-radius: 999px;
+            padding: 0.22rem 0.52rem;
+            background: rgba(var(--app-primary-rgb), 0.08);
+            color: var(--app-heading);
+            font-size: 0.73rem;
+            font-weight: 600;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .pivot-dropstrip-card {
+            background: linear-gradient(180deg, rgba(var(--app-primary-rgb), 0.07), rgba(var(--app-primary-rgb), 0.03));
+            border-color: rgba(var(--app-primary-rgb), 0.22);
+        }
+
+        .pivot-zone-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.55rem;
+        }
+
+        .pivot-zone {
+            border: 1px solid rgba(var(--app-primary-rgb), 0.24);
+            border-radius: 10px;
+            background: rgba(235, 235, 237, 0.9);
+            min-height: 88px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pivot-zone__title {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.65rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--app-heading);
+            border-bottom: 1px solid rgba(var(--app-primary-rgb), 0.18);
+            background: rgba(var(--app-primary-rgb), 0.08);
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .pivot-zone__drop {
+            padding: 0.42rem;
+            min-height: 52px;
+            display: flex;
+            gap: 0.32rem;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+
+        .pivot-zone__drop.is-over {
+            background: rgba(var(--app-primary-rgb), 0.12);
+        }
+
+        .pivot-tag {
+            border: 1px solid rgba(var(--app-primary-rgb), 0.28);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--app-heading);
+            font-size: 0.76rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 0.3rem 0.58rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.38rem;
+        }
+
+        .pivot-tag__meta {
+            font-size: 0.68rem;
+            color: var(--app-primary);
+            background: rgba(var(--app-primary-rgb), 0.11);
+            border-radius: 999px;
+            padding: 0.15rem 0.35rem;
+        }
+
+        .pivot-tag__remove {
+            border: 0;
+            background: transparent;
+            color: #8a8da8;
+            padding: 0;
+            line-height: 1;
+            font-size: 0.8rem;
+        }
+
+        .pivot-report-wrap {
+            border: 1px solid var(--app-border);
+            border-radius: 12px;
+            background: #fff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pivot-view-stage {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pivot-view-panel {
+            position: absolute;
+            inset: 0;
+            transition: transform 0.34s ease, opacity 0.34s ease;
+            background: #fff;
+        }
+
+        .pivot-view-panel--table {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .pivot-view-panel--chart {
+            transform: translateX(100%);
+            opacity: 0;
+            padding: 0.7rem;
+        }
+
+        .pivot-view-stage.is-chart .pivot-view-panel--table {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .pivot-view-stage.is-chart .pivot-view-panel--chart {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        #pivotTableHolder {
+            overflow: visible;
+        }
+
+        .pivot-report-actions {
+            padding: 0.58rem 0.7rem;
+            border-bottom: 1px solid var(--app-border);
+            display: flex;
+            justify-content: flex-end;
+            background: #fff;
+        }
+
+        .pivot-filter-dropdown-menu {
+            min-width: 340px;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.2);
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 0.4rem 1rem rgba(115, 103, 240, 0.12);
+        }
+
+        .pivot-filter-dropdown-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.45rem;
+        }
+
+        .pivot-filter-control label {
+            margin-bottom: 0.16rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--app-heading);
+        }
+
+        .pivot-filter-control select {
+            min-height: 30px;
+            font-size: 0.79rem;
+            border-radius: 8px;
+        }
+
+        .pivot-chart-wrap {
+            height: 40vh;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.16);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 0.75rem 1.2rem rgba(69, 79, 99, 0.12);
+            padding: 0.6rem;
+        }
+
+        .pivot-empty-state {
+            padding: 1.3rem 1rem;
+            text-align: center;
+            color: var(--app-muted);
+        }
+
+        .pivot-empty-state i {
+            display: inline-flex;
+            width: 46px;
+            height: 46px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(var(--app-primary-rgb), 0.1);
+            color: var(--app-primary);
+            margin-bottom: 0.7rem;
+        }
+
+        .pivot-result-table {
+            --bs-table-bg: #fff;
+            --bs-table-striped-bg: #fafafe;
+            --bs-table-hover-bg: #f5f4fc;
+            --bs-table-border-color: rgba(115, 103, 240, 0.12);
+            margin: 0;
+        }
+
+        .pivot-result-table th,
+        .pivot-result-table td {
+            padding: 0.58rem 0.72rem;
+            font-size: 0.82rem;
+            line-height: 1.2;
+            vertical-align: middle;
+            color: var(--app-heading);
+            border-color: rgba(115, 103, 240, 0.12) !important;
+            white-space: nowrap;
+        }
+
+        .pivot-result-table thead th {
+            background: rgba(var(--app-primary-rgb), 0.1);
+            letter-spacing: 0.01em;
+            font-size: 0.71rem;
+            font-weight: 700;
+            white-space: normal;
+        }
+
+        .pivot-th-top {
+            font-size: 0.63rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #7a809c;
+            line-height: 1.1;
+            margin-bottom: 0.2rem;
+            font-weight: 700;
+        }
+
+        .pivot-th-main {
+            font-size: 0.74rem;
+            color: var(--app-heading);
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        .pivot-result-table .pivot-total-cell {
+            background: rgba(var(--app-primary-rgb), 0.08);
+            font-weight: 700;
+        }
+
+        .pivot-result-table .pivot-grand-row td,
+        .pivot-result-table .pivot-grand-row th {
+            background: rgba(40, 199, 111, 0.12);
+            font-weight: 700;
+        }
+
+        .pivot-modal-content {
+            border-radius: 12px;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.2);
+        }
+
+        .pivot-modal-header {
+            background: linear-gradient(180deg, rgba(var(--app-primary-rgb), 0.14), rgba(var(--app-primary-rgb), 0.06));
+            border-bottom: 1px solid rgba(var(--app-primary-rgb), 0.2);
+        }
+
+        .pivot-row-compact .pivot-result-table th,
+        .pivot-row-compact .pivot-result-table td {
+            padding-top: 0.42rem;
+            padding-bottom: 0.42rem;
+        }
+
+        @@media (max-width: 991.98px) {
+            .pivot-zone-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .pivot-filter-dropdown-menu {
+                min-width: 280px;
+            }
+
+            .pivot-chart-wrap {
+                height: 34vh;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .pivot-zone-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const analysisRecords = @Html.Raw(analysisJson);
+
+            const fieldMeta = {
+                Musteri: { label: "Müşteri", type: "dimension" },
+                ProjeAdi: { label: "Proje Adı", type: "dimension" },
+                TasarimNo: { label: "Tasarım No", type: "dimension" },
+                DizaynId: { label: "Dizayn Id", type: "dimension" },
+                MusteriProje: { label: "Müşteri / Proje", type: "dimension" },
+                ElektrikMuhendisi: { label: "Elektrik Mühendisi", type: "dimension" },
+                MekanikMuhendisi: { label: "Mekanik Mühendisi", type: "dimension" },
+                Muhendis: { label: "Sorumlu Mühendis", type: "dimension" },
+                BaglantiGrubu: { label: "Bağlantı Grubu", type: "dimension" },
+                CekirdekTipi: { label: "Çekirdek Tipi", type: "dimension" },
+                SacCinsi: { label: "Sac Cinsi", type: "dimension" },
+                KazanCinsi: { label: "Kazan Cinsi", type: "dimension" },
+                YagCinsi: { label: "Yağ Cinsi", type: "dimension" },
+                Sonuc: { label: "Sonuç", type: "dimension" },
+                TestTarihi: { label: "Test Tarihi", type: "dimension" },
+                DizaynTarihi: { label: "Dizayn Tarihi", type: "dimension" },
+                GucKVA: { label: "Güç (kVA)", type: "measure" },
+                GerilimYG: { label: "YG Gerilim", type: "measure" },
+                GerilimAG: { label: "AG Gerilim", type: "measure" },
+                Frekans: { label: "Frekans", type: "measure" },
+                P0Sapma: { label: "P0 Sapma", type: "measure" },
+                PkSapma: { label: "Pk Sapma", type: "measure" },
+                UkSapma: { label: "UK Sapma", type: "measure" }
+            };
+
+            const aggLabel = {
+                sum: "Toplam",
+                avg: "Ortalama",
+                count: "Adet",
+                min: "En Küçük",
+                max: "En Büyük"
+            };
+
+            function toNumber(value) {
+                const n = Number(value);
+                return Number.isFinite(n) ? n : 0;
+            }
+
+            const data = analysisRecords.map(r => ({
+                Musteri: r.Musteri || "Tanımsız",
+                ProjeAdi: r.ProjeAdi || "Tanımsız",
+                TasarimNo: r.TasarimNo || "Tanımsız",
+                DizaynId: r.DizaynId || "Tanımsız",
+                MusteriProje: r.MusteriProje || "Tanımsız / Tanımsız",
+                ElektrikMuhendisi: r.ElektrikMuhendisi || "Tanımsız",
+                MekanikMuhendisi: r.MekanikMuhendisi || "Tanımsız",
+                Muhendis: r.Muhendis || "Tanımsız",
+                BaglantiGrubu: r.BaglantiGrubu || "Tanımsız",
+                CekirdekTipi: r.CekirdekTipi || "Tanımsız",
+                SacCinsi: r.SacCinsi || "Tanımsız",
+                KazanCinsi: r.KazanCinsi || "Tanımsız",
+                YagCinsi: r.YagCinsi || "Tanımsız",
+                Sonuc: r.Sonuc || "BEKLEMEDE",
+                TestTarihi: r.TestTarihi || "-",
+                DizaynTarihi: r.DizaynTarihi || "-",
+                GucKVA: toNumber(r.Guc),
+                GerilimYG: toNumber(r.GerilimYG),
+                GerilimAG: toNumber(r.GerilimAG),
+                Frekans: toNumber(r.Frekans),
+                P0Sapma: toNumber(r.P0Sapma),
+                PkSapma: toNumber(r.PkSapma),
+                UkSapma: toNumber(r.UkSapma)
+            }));
+
+            const state = {
+                targetZone: "rows",
+                rows: [],
+                columns: [],
+                filters: [],
+                values: [],
+                filterValues: {},
+                chartModel: null,
+                chartInstance: null,
+                options: {
+                    showGrandTotals: true,
+                    compactRows: false,
+                    decimalPlaces: 2
+                }
+            };
+
+            function isValidZoneForField(fieldKey, zone) {
+                const meta = fieldMeta[fieldKey];
+                if (!meta) {
+                    return false;
+                }
+                return true;
+            }
+
+            const zones = {
+                rows: document.getElementById("zone-rows"),
+                columns: document.getElementById("zone-columns"),
+                values: document.getElementById("zone-values"),
+                filters: document.getElementById("zone-filters")
+            };
+
+            const emptyState = document.getElementById("pivotEmptyState");
+            const tableHolder = document.getElementById("pivotTableHolder");
+            const table = document.getElementById("pivotResultTable");
+            const filterInputs = document.getElementById("dynamicFilterInputs");
+            const filtreDropdownWrap = document.getElementById("aktifFiltreDropdownWrap");
+            const filtreBadge = document.getElementById("aktifFiltreBadge");
+            const reportWrap = document.getElementById("pivotReportWrap");
+            const viewStage = document.getElementById("pivotViewStage");
+            const tablePanel = document.getElementById("pivotTablePanel");
+            const chartPanel = document.getElementById("pivotChartPanel");
+            const chartCanvas = document.getElementById("pivotChartCanvas");
+            const tabloyaDonBtn = document.getElementById("tabloyaDonBtn");
+
+            function syncStageHeight() {
+                const activePanel = viewStage.classList.contains("is-chart") ? chartPanel : tablePanel;
+                const contentHeight = activePanel ? activePanel.scrollHeight : 0;
+                viewStage.style.height = `${contentHeight}px`;
+            }
+
+            function setView(mode) {
+                if (mode === "chart") {
+                    viewStage.classList.add("is-chart");
+                    syncStageHeight();
+                    return;
+                }
+                viewStage.classList.remove("is-chart");
+                syncStageHeight();
+            }
+
+            function hexToRgba(hex, alpha) {
+                const value = (hex || "").replace("#", "");
+                const normalized = value.length === 3
+                    ? value.split("").map(c => c + c).join("")
+                    : value;
+                const int = parseInt(normalized, 16);
+                const r = (int >> 16) & 255;
+                const g = (int >> 8) & 255;
+                const b = int & 255;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+
+            function adjustHex(hex, amount) {
+                const value = (hex || "").replace("#", "");
+                const normalized = value.length === 3
+                    ? value.split("").map(c => c + c).join("")
+                    : value;
+                const int = parseInt(normalized, 16);
+                const r = Math.max(0, Math.min(255, ((int >> 16) & 255) + amount));
+                const g = Math.max(0, Math.min(255, ((int >> 8) & 255) + amount));
+                const b = Math.max(0, Math.min(255, (int & 255) + amount));
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+
+            function createVerticalGradient(chart, colorHex) {
+                const { ctx, chartArea } = chart;
+                if (!chartArea) {
+                    return hexToRgba(colorHex, 0.55);
+                }
+
+                const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                gradient.addColorStop(0, hexToRgba(colorHex, 0.82));
+                gradient.addColorStop(1, hexToRgba(colorHex, 0.09));
+                return gradient;
+            }
+
+            function createPremiumShadowPlugin() {
+                return {
+                    id: "premiumShadowPlugin",
+                    beforeDatasetDraw(chart) {
+                        const { ctx } = chart;
+                        ctx.save();
+                        ctx.shadowColor = "rgba(115, 103, 240, 0.2)";
+                        ctx.shadowBlur = 12;
+                        ctx.shadowOffsetX = 0;
+                        ctx.shadowOffsetY = 4;
                     },
+                    afterDatasetDraw(chart) {
+                        chart.ctx.restore();
+                    }
+                };
+            }
+
+            function renderChart(chartType) {
+                if (!state.chartModel || !state.chartModel.labels.length || !chartCanvas) {
+                    return false;
+                }
+
+                if (state.chartInstance) {
+                    state.chartInstance.destroy();
+                }
+
+                const palette = ["#7367F0", "#00CFE8", "#28C76F", "#FF6B6B", "#A66BFF", "#1E9EF7", "#00B894", "#FF9F43"];
+                const base = idx => palette[idx % palette.length];
+
+                let labels = state.chartModel.labels;
+                let datasets;
+
+                if (chartType === "pie" || chartType === "doughnut") {
+                    const first = state.chartModel.series[0];
+                    datasets = [{
+                        label: first.name,
+                        data: first.data,
+                        backgroundColor: labels.map((_, i) => hexToRgba(base(i), 0.82)),
+                        borderColor: labels.map(() => "rgba(255,255,255,0.96)"),
+                        hoverBackgroundColor: labels.map((_, i) => adjustHex(base(i), 20)),
+                        borderWidth: 2,
+                        hoverOffset: 14,
+                        spacing: 2
+                    }];
+                } else if (chartType === "radar") {
+                    datasets = state.chartModel.series.map((s, i) => ({
+                        label: s.name,
+                        data: s.data,
+                        borderColor: base(i),
+                        backgroundColor: hexToRgba(base(i), 0.18),
+                        pointBackgroundColor: adjustHex(base(i), 28),
+                        pointBorderColor: "#ffffff",
+                        pointHoverBackgroundColor: "#ffffff",
+                        pointHoverBorderColor: base(i),
+                        pointRadius: 3.5,
+                        pointHoverRadius: 6,
+                        borderWidth: 2.2,
+                        fill: true,
+                        tension: 0.38
+                    }));
+                } else {
+                    datasets = state.chartModel.series.map((s, i) => ({
+                        label: s.name,
+                        data: s.data,
+                        borderColor: base(i),
+                        backgroundColor: context => createVerticalGradient(context.chart, base(i)),
+                        hoverBackgroundColor: adjustHex(base(i), 20),
+                        hoverBorderColor: adjustHex(base(i), 25),
+                        hoverBorderWidth: 2,
+                        pointBackgroundColor: base(i),
+                        pointBorderColor: "#ffffff",
+                        pointRadius: chartType === "line" ? 3 : 0,
+                        pointHoverRadius: chartType === "line" ? 7 : 4,
+                        pointHitRadius: 14,
+                        fill: chartType === "line",
+                        tension: chartType === "line" ? 0.44 : 0.26,
+                        cubicInterpolationMode: "monotone",
+                        borderWidth: chartType === "line" ? 3 : 1.6,
+                        borderSkipped: false,
+                        borderRadius: chartType === "bar" ? 8 : 0
+                    }));
+                }
+
+                state.chartInstance = new Chart(chartCanvas, {
+                    type: chartType,
+                    data: { labels, datasets },
+                    plugins: [createPremiumShadowPlugin()],
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 950,
+                            easing: "easeInOutQuart"
+                        },
+                        interaction: {
+                            mode: "nearest",
+                            intersect: false
+                        },
                         plugins: {
                             legend: {
-                                position: 'bottom',
-                                labels: { padding: 20, font: { size: 14 } }
+                                position: "bottom",
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: "circle",
+                                    padding: 14,
+                                    boxWidth: 10,
+                                    color: "#4b4f64",
+                                    font: {
+                                        family: "Public Sans",
+                                        size: 12,
+                                        weight: "600"
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: "rgba(115, 103, 240, 0.94)",
+                                titleColor: "#ffffff",
+                                bodyColor: "#f7f7ff",
+                                borderColor: "rgba(255,255,255,0.36)",
+                                borderWidth: 1,
+                                cornerRadius: 10,
+                                padding: 11,
+                                displayColors: true,
+                                titleFont: {
+                                    family: "Public Sans",
+                                    size: 12,
+                                    weight: "700"
+                                },
+                                bodyFont: {
+                                    family: "Public Sans",
+                                    size: 12,
+                                    weight: "500"
+                                },
+                                callbacks: {
+                                    title(items) {
+                                        return `Kategori: ${items[0].label}`;
+                                    },
+                                    label(context) {
+                                        const rawVal = (typeof context.parsed === "number")
+                                            ? context.parsed
+                                            : (context.parsed && typeof context.parsed.y === "number" ? context.parsed.y : 0);
+                                        return `${context.dataset.label}: ${Number(rawVal).toLocaleString("tr-TR", {
+                                            minimumFractionDigits: state.options.decimalPlaces,
+                                            maximumFractionDigits: state.options.decimalPlaces
+                                        })}`;
+                                    }
+                                }
                             }
-                        }
+                        },
+                        scales: (chartType === "pie" || chartType === "doughnut")
+                            ? {}
+                            : (chartType === "radar"
+                                ? {
+                                    r: {
+                                        angleLines: { color: "rgba(115,103,240,0.15)" },
+                                        grid: { color: "rgba(115,103,240,0.14)" },
+                                        pointLabels: {
+                                            color: "#5a607b",
+                                            font: {
+                                                family: "Public Sans",
+                                                size: 11,
+                                                weight: "600"
+                                            }
+                                        },
+                                        ticks: {
+                                            backdropColor: "transparent",
+                                            color: "#7a809c",
+                                            showLabelBackdrop: false
+                                        }
+                                    }
+                                }
+                                : {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: "Kırılım",
+                                            color: "#5a607b",
+                                            font: {
+                                                family: "Public Sans",
+                                                size: 12,
+                                                weight: "700"
+                                            }
+                                        },
+                                        ticks: {
+                                            maxRotation: 35,
+                                            minRotation: 0,
+                                            color: "#666f8d",
+                                            font: {
+                                                family: "Public Sans",
+                                                size: 11,
+                                                weight: "500"
+                                            }
+                                        },
+                                        grid: {
+                                            color: "rgba(115,103,240,0.08)"
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: "Değer",
+                                            color: "#5a607b",
+                                            font: {
+                                                family: "Public Sans",
+                                                size: 12,
+                                                weight: "700"
+                                            }
+                                        },
+                                        ticks: {
+                                            color: "#666f8d",
+                                            font: {
+                                                family: "Public Sans",
+                                                size: 11,
+                                                weight: "500"
+                                            }
+                                        },
+                                        grid: {
+                                            color: "rgba(115,103,240,0.08)"
+                                        }
+                                    }
+                                })
+                    }
+                });
+
+                setTimeout(syncStageHeight, 40);
+
+                return true;
+            }
+
+            function createFieldChip(fieldKey) {
+                const meta = fieldMeta[fieldKey];
+                const el = document.createElement("button");
+                el.type = "button";
+                el.className = "pivot-field-item";
+                el.textContent = meta.label;
+                el.draggable = true;
+                el.dataset.field = fieldKey;
+                el.addEventListener("click", () => addFieldToZone(fieldKey, state.targetZone));
+                el.addEventListener("dragstart", ev => {
+                    ev.dataTransfer.setData("text/plain", fieldKey);
+                });
+                return el;
+            }
+
+            function renderFieldLists() {
+                const dim = document.getElementById("dimensionFields");
+                const mea = document.getElementById("measureFields");
+                dim.innerHTML = "";
+                mea.innerHTML = "";
+
+                Object.keys(fieldMeta).forEach(key => {
+                    const chip = createFieldChip(key);
+                    if (fieldMeta[key].type === "measure") {
+                        mea.appendChild(chip);
+                    } else {
+                        dim.appendChild(chip);
                     }
                 });
             }
+
+            function bindTargetToggle() {
+                document.querySelectorAll(".pivot-target-toggle__btn").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        document.querySelectorAll(".pivot-target-toggle__btn").forEach(x => x.classList.remove("is-active"));
+                        btn.classList.add("is-active");
+                        state.targetZone = btn.dataset.targetZone;
+                    });
+                });
+            }
+
+            function addFieldToZone(fieldKey, zone) {
+                if (!fieldMeta[fieldKey] || !zone) {
+                    return;
+                }
+
+                if (!isValidZoneForField(fieldKey, zone)) {
+                    return;
+                }
+
+                if (zone === "values") {
+                    if (state.values.some(v => v.key === fieldKey)) {
+                        return;
+                    }
+                    const defaultAgg = fieldMeta[fieldKey].type === "measure" ? "avg" : "count";
+                    state.values.push({ key: fieldKey, agg: defaultAgg });
+                } else {
+                    if (state[zone].includes(fieldKey)) {
+                        return;
+                    }
+                    state[zone].push(fieldKey);
+                }
+
+                renderZoneTags();
+                renderFilterInputs();
+                buildPivot();
+            }
+
+            function removeFieldFromZone(zone, fieldKey) {
+                if (zone === "values") {
+                    state.values = state.values.filter(v => v.key !== fieldKey);
+                } else {
+                    state[zone] = state[zone].filter(k => k !== fieldKey);
+                    if (zone === "filters") {
+                        delete state.filterValues[fieldKey];
+                    }
+                }
+                renderZoneTags();
+                renderFilterInputs();
+                buildPivot();
+            }
+
+            function renderZoneTags() {
+                Object.keys(zones).forEach(zoneName => {
+                    zones[zoneName].innerHTML = "";
+                    const list = zoneName === "values" ? state.values : state[zoneName];
+
+                    if (!list.length) {
+                        const ghost = document.createElement("div");
+                        ghost.className = "text-muted small";
+                        ghost.textContent = "Alanları buraya sürükleyin";
+                        zones[zoneName].appendChild(ghost);
+                        return;
+                    }
+
+                    list.forEach(item => {
+                        const fieldKey = zoneName === "values" ? item.key : item;
+                        const wrap = document.createElement("span");
+                        wrap.className = "pivot-tag";
+
+                        const title = document.createElement("span");
+                        title.textContent = fieldMeta[fieldKey].label;
+                        wrap.appendChild(title);
+
+                        if (zoneName === "values") {
+                            const meta = document.createElement("span");
+                            meta.className = "pivot-tag__meta";
+                            meta.textContent = aggLabel[item.agg] || item.agg;
+                            wrap.appendChild(meta);
+
+                            meta.addEventListener("click", function () {
+                                const order = ["sum", "avg", "count", "min", "max"];
+                                const idx = order.indexOf(item.agg);
+                                item.agg = order[(idx + 1) % order.length];
+                                renderZoneTags();
+                                buildPivot();
+                            });
+                        }
+
+                        const removeBtn = document.createElement("button");
+                        removeBtn.type = "button";
+                        removeBtn.className = "pivot-tag__remove";
+                        removeBtn.innerHTML = "<i class='fa-solid fa-xmark'></i>";
+                        removeBtn.addEventListener("click", () => removeFieldFromZone(zoneName, fieldKey));
+                        wrap.appendChild(removeBtn);
+
+                        zones[zoneName].appendChild(wrap);
+                    });
+                });
+            }
+
+            function setupDropZones() {
+                document.querySelectorAll(".pivot-zone").forEach(zoneEl => {
+                    const zoneName = zoneEl.dataset.zone;
+                    const dropArea = zoneEl.querySelector(".pivot-zone__drop");
+
+                    dropArea.addEventListener("dragover", ev => {
+                        ev.preventDefault();
+                        dropArea.classList.add("is-over");
+                    });
+
+                    dropArea.addEventListener("dragleave", () => {
+                        dropArea.classList.remove("is-over");
+                    });
+
+                    dropArea.addEventListener("drop", ev => {
+                        ev.preventDefault();
+                        dropArea.classList.remove("is-over");
+                        const fieldKey = ev.dataTransfer.getData("text/plain");
+                        if (!isValidZoneForField(fieldKey, zoneName)) {
+                            return;
+                        }
+                        addFieldToZone(fieldKey, zoneName);
+                    });
+                });
+            }
+
+            function renderFilterInputs() {
+                filterInputs.innerHTML = "";
+                if (!state.filters.length) {
+                    if (filtreDropdownWrap) {
+                        filtreDropdownWrap.style.display = "none";
+                    }
+                    return;
+                }
+
+                if (filtreDropdownWrap) {
+                    filtreDropdownWrap.style.display = "block";
+                }
+                if (filtreBadge) {
+                    filtreBadge.textContent = String(state.filters.length);
+                }
+
+                state.filters.forEach(fieldKey => {
+                    const col = document.createElement("div");
+                    col.className = "pivot-filter-control";
+
+                    const label = document.createElement("label");
+                    label.className = "form-label";
+                    label.textContent = fieldMeta[fieldKey].label;
+
+                    const select = document.createElement("select");
+                    select.className = "form-select form-select-sm";
+                    const allOption = document.createElement("option");
+                    allOption.value = "";
+                    allOption.textContent = "Tümü";
+                    select.appendChild(allOption);
+
+                    const values = [...new Set(data.map(d => String(d[fieldKey] ?? "-")))].sort((a, b) => a.localeCompare(b, "tr"));
+                    values.forEach(v => {
+                        const opt = document.createElement("option");
+                        opt.value = v;
+                        opt.textContent = v;
+                        if (state.filterValues[fieldKey] === v) {
+                            opt.selected = true;
+                        }
+                        select.appendChild(opt);
+                    });
+
+                    select.addEventListener("change", () => {
+                        state.filterValues[fieldKey] = select.value;
+                        buildPivot();
+                    });
+
+                    col.appendChild(label);
+                    col.appendChild(select);
+                    filterInputs.appendChild(col);
+                });
+            }
+
+            function filterData() {
+                return data.filter(row => {
+                    return state.filters.every(f => {
+                        const selected = state.filterValues[f];
+                        if (!selected) {
+                            return true;
+                        }
+                        return String(row[f] ?? "-") === selected;
+                    });
+                });
+            }
+
+            function keyFromFields(row, fields) {
+                if (!fields.length) {
+                    return "__tek";
+                }
+                return fields.map(f => String(row[f] ?? "-")).join(" || ");
+            }
+
+            function labelFromKey(key) {
+                if (key === "__tek") {
+                    return ["-"];
+                }
+                return key.split(" || ");
+            }
+
+            function initAgg(agg) {
+                if (agg === "min") return { min: Number.POSITIVE_INFINITY };
+                if (agg === "max") return { max: Number.NEGATIVE_INFINITY };
+                if (agg === "count") return { count: 0 };
+                return { sum: 0, count: 0 };
+            }
+
+            function updateAgg(acc, agg, value) {
+                const n = toNumber(value);
+                if (agg === "sum") {
+                    acc.sum += n;
+                } else if (agg === "avg") {
+                    acc.sum += n;
+                    acc.count += 1;
+                } else if (agg === "count") {
+                    acc.count += 1;
+                } else if (agg === "min") {
+                    acc.min = Math.min(acc.min, n);
+                } else if (agg === "max") {
+                    acc.max = Math.max(acc.max, n);
+                }
+            }
+
+            function finishAgg(acc, agg) {
+                if (agg === "sum") return acc.sum;
+                if (agg === "avg") return acc.count ? acc.sum / acc.count : 0;
+                if (agg === "count") return acc.count;
+                if (agg === "min") return acc.min === Number.POSITIVE_INFINITY ? 0 : acc.min;
+                if (agg === "max") return acc.max === Number.NEGATIVE_INFINITY ? 0 : acc.max;
+                return 0;
+            }
+
+            function formatNumber(value) {
+                return Number(value).toLocaleString("tr-TR", {
+                    minimumFractionDigits: state.options.decimalPlaces,
+                    maximumFractionDigits: state.options.decimalPlaces
+                });
+            }
+
+            function valueLabel(v) {
+                return `${fieldMeta[v.key].label} (${aggLabel[v.agg]})`;
+            }
+
+            function formatHeaderCell(mainText, topText = "") {
+                const safeMain = mainText || "-";
+                if (!topText) {
+                    return `<div class=\"pivot-th-main\">${safeMain}</div>`;
+                }
+                return `<div class=\"pivot-th-top\">${topText}</div><div class=\"pivot-th-main\">${safeMain}</div>`;
+            }
+
+            function buildPivot() {
+                if (!state.rows.length || !state.values.length) {
+                    table.innerHTML = "";
+                    tableHolder.style.display = "none";
+                    emptyState.style.display = "block";
+                    state.chartModel = null;
+                    setView("table");
+                    syncStageHeight();
+                    return;
+                }
+
+                const filtered = filterData();
+                if (!filtered.length) {
+                    table.innerHTML = "";
+                    tableHolder.style.display = "none";
+                    emptyState.style.display = "block";
+                    emptyState.querySelector("h6").textContent = "Seçili filtrelerle eşleşen kayıt bulunamadı";
+                    state.chartModel = null;
+                    setView("table");
+                    syncStageHeight();
+                    return;
+                }
+
+                emptyState.querySelector("h6").textContent = "Analize başlamak için alanları kutucuklara yerleştirin";
+                const rowKeys = [...new Set(filtered.map(r => keyFromFields(r, state.rows)))].sort((a, b) => a.localeCompare(b, "tr"));
+                const colKeys = state.columns.length
+                    ? [...new Set(filtered.map(r => keyFromFields(r, state.columns)))].sort((a, b) => a.localeCompare(b, "tr"))
+                    : ["__tek"];
+
+                const matrix = new Map();
+
+                filtered.forEach(r => {
+                    const rk = keyFromFields(r, state.rows);
+                    const ck = keyFromFields(r, state.columns);
+                    const key = `${rk}##${ck}`;
+                    if (!matrix.has(key)) {
+                        const initial = state.values.map(v => initAgg(v.agg));
+                        matrix.set(key, initial);
+                    }
+                    const bucket = matrix.get(key);
+                    state.values.forEach((v, i) => updateAgg(bucket[i], v.agg, r[v.key]));
+                });
+
+                const headRow = [];
+                const metricHeaders = [];
+                state.rows.forEach(f => {
+                    headRow.push(formatHeaderCell(fieldMeta[f].label));
+                });
+                colKeys.forEach(ck => {
+                    const colName = state.columns.length ? labelFromKey(ck).join(" / ") : "";
+                    state.values.forEach(v => {
+                        const metricText = valueLabel(v);
+                        headRow.push(formatHeaderCell(metricText, colName));
+                        metricHeaders.push(colName ? `${colName} / ${metricText}` : metricText);
+                    });
+                });
+
+                const chartModel = {
+                    labels: [],
+                    series: metricHeaders.map(h => ({ name: h, data: [] }))
+                };
+
+                let html = "<thead><tr>";
+                headRow.forEach(h => {
+                    html += `<th>${h}</th>`;
+                });
+                html += "</tr></thead><tbody>";
+
+                const grandCollectors = state.values.map(v => initAgg(v.agg));
+
+                rowKeys.forEach(rk => {
+                    const rowLabels = labelFromKey(rk);
+                    chartModel.labels.push(rowLabels.join(" / "));
+                    html += "<tr>";
+                    rowLabels.forEach(x => {
+                        html += `<th>${x}</th>`;
+                    });
+
+                    let seriesIndex = 0;
+
+                    colKeys.forEach(ck => {
+                        const combo = matrix.get(`${rk}##${ck}`) || state.values.map(v => initAgg(v.agg));
+                        state.values.forEach((v, i) => {
+                            const val = finishAgg(combo[i], v.agg);
+                            updateAgg(grandCollectors[i], v.agg, val);
+                            chartModel.series[seriesIndex].data.push(Number(val));
+                            seriesIndex += 1;
+                            html += `<td>${formatNumber(val)}</td>`;
+                        });
+                    });
+
+                    html += "</tr>";
+                });
+
+                if (state.options.showGrandTotals) {
+                    html += "<tr class='pivot-grand-row'>";
+                    html += `<th colspan='${Math.max(1, state.rows.length)}'>Genel Toplam</th>`;
+
+                    const cellCount = colKeys.length * state.values.length;
+                    for (let i = 0; i < cellCount; i++) {
+                        const valIdx = i % state.values.length;
+                        const v = state.values[valIdx];
+                        const totalVal = finishAgg(grandCollectors[valIdx], v.agg);
+                        html += `<td class='pivot-total-cell'>${formatNumber(totalVal)}</td>`;
+                    }
+
+                    html += "</tr>";
+                }
+
+                html += "</tbody>";
+                table.innerHTML = html;
+                tableHolder.style.display = "block";
+                emptyState.style.display = "none";
+                state.chartModel = chartModel;
+
+                if (state.options.compactRows) {
+                    reportWrap.classList.add("pivot-row-compact");
+                } else {
+                    reportWrap.classList.remove("pivot-row-compact");
+                }
+
+                syncStageHeight();
+            }
+
+            function applyDefaultSetup() {
+                state.rows = ["Musteri"];
+                state.columns = ["Muhendis"];
+                state.filters = ["Sonuc"];
+                state.values = [
+                    { key: "P0Sapma", agg: "avg" },
+                    { key: "PkSapma", agg: "avg" },
+                    { key: "UkSapma", agg: "avg" },
+                    { key: "Musteri", agg: "count" }
+                ];
+                state.filterValues = {};
+                renderZoneTags();
+                renderFilterInputs();
+                buildPivot();
+            }
+
+            document.getElementById("filtreTemizleBtn").addEventListener("click", function () {
+                state.rows = [];
+                state.columns = [];
+                state.values = [];
+                state.filters = [];
+                state.filterValues = {};
+                renderZoneTags();
+                renderFilterInputs();
+                buildPivot();
+            });
+
+            document.getElementById("applyOzelBtn").addEventListener("click", function () {
+                state.options.showGrandTotals = document.getElementById("showGrandTotals").checked;
+                state.options.compactRows = document.getElementById("compactRows").checked;
+                state.options.decimalPlaces = Number(document.getElementById("decimalPlaces").value);
+                buildPivot();
+
+                const modalEl = document.getElementById("pivotOzelModal");
+                const instance = bootstrap.Modal.getInstance(modalEl);
+                if (instance) {
+                    instance.hide();
+                }
+            });
+
+            document.getElementById("excelBtn").addEventListener("click", function () {
+                if (!table.tHead || !table.tBodies.length) {
+                    return;
+                }
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.table_to_sheet(table);
+                XLSX.utils.book_append_sheet(wb, ws, "Analiz");
+                XLSX.writeFile(wb, "trafo-analiz-raporu.xlsx");
+            });
+
+            document.getElementById("pdfBtn").addEventListener("click", function () {
+                if (!table.tHead || !table.tBodies.length) {
+                    return;
+                }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+
+                const headers = [...table.querySelectorAll("thead th")].map(x => x.textContent.trim());
+                const body = [...table.querySelectorAll("tbody tr")].map(row =>
+                    [...row.children].map(cell => cell.textContent.trim())
+                );
+
+                doc.text("Trafo Analiz Raporu", 40, 30);
+                doc.autoTable({
+                    head: [headers],
+                    body: body,
+                    startY: 45,
+                    styles: { fontSize: 8, cellPadding: 4 },
+                    headStyles: { fillColor: [235, 235, 237], textColor: [68, 64, 80] }
+                });
+
+                doc.save("trafo-analiz-raporu.pdf");
+            });
+
+            document.querySelectorAll(".pivot-chart-option").forEach(item => {
+                item.addEventListener("click", function () {
+                    const type = item.dataset.chartType;
+                    if (renderChart(type)) {
+                        setView("chart");
+                    }
+                });
+            });
+
+            tabloyaDonBtn.addEventListener("click", function () {
+                setView("table");
+            });
+
+            renderFieldLists();
+            bindTargetToggle();
+            setupDropZones();
+            applyDefaultSetup();
+            window.addEventListener("resize", syncStageHeight);
         });
     </script>
 }
