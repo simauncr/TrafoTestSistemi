@@ -28,6 +28,7 @@ namespace TrafoTestSistemi.Controllers
                 HttpContext.Session.SetString("User", user.AdSoyad);
                 HttpContext.Session.SetString("UserName", user.KullaniciAdi);
                 HttpContext.Session.SetString("UserId", user.Id.ToString());
+                HttpContext.Session.SetString("PivotResetPending", "1");
                 return RedirectToAction("Index", "TrafoTests");
             }
 

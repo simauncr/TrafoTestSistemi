@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TrafoTestSistemi.Models;
 
@@ -11,9 +12,11 @@ using TrafoTestSistemi.Models;
 namespace TrafoTestSistemi.Migrations
 {
     [DbContext(typeof(TrafoContext))]
-    partial class TrafoContextModelSnapshot : ModelSnapshot
+    [Migration("20260513185339_AddIsExcludedToTrafoTest")]
+    partial class AddIsExcludedToTrafoTest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -377,15 +380,6 @@ namespace TrafoTestSistemi.Migrations
                         .HasColumnType("float");
 
                     b.Property<double>("P55_Test")
-                        .HasColumnType("float");
-
-                    b.Property<double>("SapmaGH")
-                        .HasColumnType("float");
-
-                    b.Property<double>("SapmaGT")
-                        .HasColumnType("float");
-
-                    b.Property<double>("SapmaHT")
                         .HasColumnType("float");
 
                     b.Property<double>("Pk_Garanti")

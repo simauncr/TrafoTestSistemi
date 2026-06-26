@@ -11,6 +11,7 @@ using Microsoft.Data.SqlClient;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace TrafoTestSistemi.Controllers
 {
@@ -46,6 +47,7 @@ namespace TrafoTestSistemi.Controllers
         public async Task<IActionResult> Analiz()
         {
             var testler = await _context.TestKayitlari
+                .Where(x => !x.IsExcluded)
                 .Include(x => x.YagCinsi)
                 .Include(x => x.SacCinsi)
                 .Include(x => x.CekirdekTipi)
@@ -91,6 +93,20 @@ namespace TrafoTestSistemi.Controllers
                     KazanCinsi = x.KazanCinsi == null || string.IsNullOrWhiteSpace(x.KazanCinsi.Ad) ? "Tanimsiz" : x.KazanCinsi.Ad,
                     YagCinsi = x.YagCinsi == null || string.IsNullOrWhiteSpace(x.YagCinsi.Ad) ? "Tanimsiz" : x.YagCinsi.Ad,
                     SacCinsi = x.SacCinsi == null || string.IsNullOrWhiteSpace(x.SacCinsi.Ad) ? "Tanimsiz" : x.SacCinsi.Ad,
+                    x.SapmaGH,
+                    x.SapmaGT,
+                    x.SapmaHT,
+                    // expose detailed grouped sapma fields so the pivot can access them individually
+                    P0_Sapma_GH = x.P0_Sapma_GH,
+                    P0_Sapma_GT = x.P0_Sapma_GT,
+                    P0_Sapma_HT = x.P0_Sapma_HT,
+                    Pk_Sapma_GH = x.Pk_Sapma_GH,
+                    Pk_Sapma_GT = x.Pk_Sapma_GT,
+                    Pk_Sapma_HT = x.Pk_Sapma_HT,
+                    Uk_Sapma_GH = x.Uk_Sapma_GH,
+                    Uk_Sapma_GT = x.Uk_Sapma_GT,
+                    Uk_Sapma_HT = x.Uk_Sapma_HT,
+                    // keep legacy aggregated absolute HT values for compatibility
                     P0Sapma = Math.Round(Math.Abs(x.P0_Sapma_HT), 2),
                     PkSapma = Math.Round(Math.Abs(x.Pk_Sapma_HT), 2),
                     UkSapma = Math.Round(Math.Abs(x.Uk_Sapma_HT), 2),
@@ -102,7 +118,148 @@ namespace TrafoTestSistemi.Controllers
             {
                 ViewBag.UygunDegil = ViewBag.Toplam;
             }
+
+            List<string> MergeMasterOptions(IEnumerable<string> required, IEnumerable<string> fromDb)
+            {
+                var list = new List<string>();
+
+                foreach (var item in required.Concat(fromDb))
+                {
+                    var value = (item ?? string.Empty).Trim();
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        continue;
+                    }
+
+                    if (!list.Contains(value, StringComparer.OrdinalIgnoreCase))
+                    {
+                        list.Add(value);
+                    }
+                }
+
+                return list;
+            }
+
+            var sacCinsiDb = await _context.SacCinsleri
+                .AsNoTracking()
+                .OrderBy(x => x.Ad)
+                .Select(x => x.Ad)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct()
+                .ToListAsync();
+
+            var kazanCinsiDb = await _context.KazanCinsleri
+                .AsNoTracking()
+                .OrderBy(x => x.Ad)
+                .Select(x => x.Ad)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct()
+                .ToListAsync();
+
+            var yagCinsiDb = await _context.YagCinsleri
+                .AsNoTracking()
+                .OrderBy(x => x.Ad)
+                .Select(x => x.Ad)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct()
+                .ToListAsync();
+
+            var masterDimensionValues = new Dictionary<string, List<string>>
+            {
+                ["CekirdekTipi"] = await _context.CekirdekTipleri
+                    .AsNoTracking()
+                    .OrderBy(x => x.Ad)
+                    .Select(x => x.Ad)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Distinct()
+                    .ToListAsync(),
+                ["SacCinsi"] = MergeMasterOptions(
+                    new[] { "M075-23P", "M080-23P", "M085-23P", "M130" },
+                    sacCinsiDb),
+                ["KazanCinsi"] = MergeMasterOptions(
+                    new[] { "Dalga Duvar", "Düz Duvar" },
+                    kazanCinsiDb),
+                ["YagCinsi"] = MergeMasterOptions(
+                    new[] { "Midel", "FR3", "Silikon" },
+                    yagCinsiDb),
+                ["ElektrikMuhendisi"] = await _context.Muhendisler
+                    .AsNoTracking()
+                    .OrderBy(x => x.AdSoyad)
+                    .Select(x => x.AdSoyad)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Distinct()
+                    .ToListAsync(),
+                ["MekanikMuhendisi"] = await _context.Muhendisler
+                    .AsNoTracking()
+                    .OrderBy(x => x.AdSoyad)
+                    .Select(x => x.AdSoyad)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Distinct()
+                    .ToListAsync(),
+                ["Muhendis"] = await _context.Muhendisler
+                    .AsNoTracking()
+                    .OrderBy(x => x.AdSoyad)
+                    .Select(x => x.AdSoyad)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Distinct()
+                    .ToListAsync(),
+                ["BaglantiGrubu"] = await _context.TestKayitlari
+                    .AsNoTracking()
+                    .Where(x => !string.IsNullOrWhiteSpace(x.BaglantiGrubu))
+                    .Select(x => x.BaglantiGrubu!)
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToListAsync(),
+                ["Sonuc"] = new List<string> { "UYGUN", "UYGUN DEĞİL", "BEKLEMEDE" }
+            };
+
+            ViewBag.MasterDimensionValues = masterDimensionValues;
+
+            var forcePivotReset = HttpContext.Session.GetString("PivotResetPending") == "1";
+            if (forcePivotReset)
+            {
+                HttpContext.Session.Remove("PivotResetPending");
+            }
+            ViewBag.ForcePivotReset = forcePivotReset;
+
             return View();
+        }
+
+        public async Task<IActionResult> PivotKayitlar(string? ids, string? title)
+        {
+            if (string.IsNullOrWhiteSpace(ids))
+            {
+                return RedirectToAction(nameof(Analiz));
+            }
+
+            var idList = ids
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(x => int.TryParse(x, out var id) ? id : 0)
+                .Where(x => x > 0)
+                .Distinct()
+                .ToList();
+
+            if (idList.Count == 0)
+            {
+                return RedirectToAction(nameof(Analiz));
+            }
+
+            var orderMap = idList
+                .Select((id, idx) => new { id, idx })
+                .ToDictionary(x => x.id, x => x.idx);
+
+            var kayitlar = await _context.TestKayitlari
+                .Include(x => x.ElektrikMuhendisi)
+                .Include(x => x.MekanikMuhendisi)
+                .Where(x => idList.Contains(x.Id))
+                .ToListAsync();
+
+            var sirali = kayitlar
+                .OrderBy(x => orderMap.TryGetValue(x.Id, out var idx) ? idx : int.MaxValue)
+                .ToList();
+
+            ViewBag.DrillTitle = string.IsNullOrWhiteSpace(title) ? "Pivot Hücre Detayı" : title;
+            return View(sirali);
         }
 
         public async Task<IActionResult> ExcelIndir()
@@ -330,9 +487,9 @@ namespace TrafoTestSistemi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTrafolar(string? q)
+        public async Task<IActionResult> GetTrafolar(string? q, bool excludedOnly = false)
         {
-            var veriler = await FiltrelenmisTrafoSorgusu(q)
+            var veriler = await FiltrelenmisTrafoSorgusu(q, excludedOnly)
                 .OrderByDescending(x => x.Id)
                 .ToListAsync();
             return Json(new { data = veriler });
@@ -492,9 +649,33 @@ ORDER BY OlusturmaTarihi DESC, Id DESC;";
             return Ok(new { success = true, message = "Kayıt silindi." });
         }
 
-        private IQueryable<TrafoTest> FiltrelenmisTrafoSorgusu(string? q)
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> PivotTabloGuncelle([FromBody] PivotTabloGuncelleRequest? request)
         {
-            var sorgu = _context.TestKayitlari.AsQueryable();
+            if (request == null || request.Id <= 0 || string.IsNullOrWhiteSpace(request.KonfigJson))
+            {
+                return BadRequest(new { success = false, message = "Geçersiz güncelleme isteği." });
+            }
+
+            await PivotTabloDepolamaTablosunuHazirlaAsync();
+            var guncellenen = await _context.Database.ExecuteSqlRawAsync(
+                "UPDATE dbo.PivotTablolar SET KonfigJson = @konfig WHERE Id = @id;",
+                new SqlParameter("@konfig", request.KonfigJson),
+                new SqlParameter("@id", request.Id));
+
+            if (guncellenen == 0)
+            {
+                return NotFound(new { success = false, message = "Güncellenecek kayıt bulunamadı." });
+            }
+
+            return Ok(new { success = true, message = "Değişiklikler başarıyla kaydedildi." });
+        }
+
+        private IQueryable<TrafoTest> FiltrelenmisTrafoSorgusu(string? q, bool excludedOnly = false)
+        {
+            var sorgu = _context.TestKayitlari
+                .Where(x => excludedOnly ? x.IsExcluded : !x.IsExcluded);
             var aramaMetni = q?.Trim();
 
             if (string.IsNullOrWhiteSpace(aramaMetni))
@@ -535,6 +716,12 @@ END";
         public sealed class PivotTabloSilRequest
         {
             public int Id { get; set; }
+        }
+
+        public sealed class PivotTabloGuncelleRequest
+        {
+            public int Id { get; set; }
+            public string KonfigJson { get; set; } = string.Empty;
         }
 
         [HttpPost]

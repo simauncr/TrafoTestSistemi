@@ -93,7 +93,29 @@
                     text: `${adSoyad} kaydı kaldırılacak.`,
                     showCancelButton: true,
                     confirmButtonText: 'Sil',
-                    cancelButtonText: 'Vazgeç'
+                    cancelButtonText: 'Vazgeç',
+                    didRender(modal) {
+                        const confirmBtn = modal.querySelector('.swal2-confirm');
+                        if (confirmBtn) {
+                            confirmBtn.classList.add('btn-swal-danger');
+                        }
+                        
+                        const cancelBtn = modal.querySelector('.swal2-cancel');
+                        if (cancelBtn) {
+                            cancelBtn.style.background = '#ffffff';
+                            cancelBtn.style.color = '#5a607b';
+                            cancelBtn.style.border = '1.5px solid rgba(115, 103, 240, 0.4)';
+                            cancelBtn.style.borderRadius = '12px';
+                            cancelBtn.style.padding = '0.65rem 1.5rem';
+                            cancelBtn.style.fontFamily = '"Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                            cancelBtn.style.fontSize = '0.95rem';
+                            cancelBtn.style.fontWeight = '600';
+                            cancelBtn.style.cursor = 'pointer';
+                            cancelBtn.style.transition = 'all 0.24s cubic-bezier(0.4, 0, 0.2, 1)';
+                            cancelBtn.style.lineHeight = '1.4';
+                            cancelBtn.style.boxShadow = 'none';
+                        }
+                    }
                 });
 
                 if (!result.isConfirmed) {

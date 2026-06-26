@@ -7,6 +7,44 @@
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
 
+@section Styles {
+    <style>
+        .muaf-liste-bant {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-radius: 10px;
+            padding: 0.75rem 0.95rem;
+            background: rgba(var(--app-primary-rgb), 0.12);
+            color: var(--app-heading);
+            border: 1px solid rgba(var(--app-primary-rgb), 0.3);
+        }
+
+        .muaf-liste-bant__text {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .muaf-liste-btn {
+            border-radius: 10px;
+            font-weight: 700;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.35);
+            background: transparent;
+            color: var(--app-heading);
+            padding-inline: 0.75rem;
+        }
+
+        .muaf-liste-btn:hover {
+            background: rgba(var(--app-primary-rgb), 0.34);
+            color: var(--app-heading);
+            border-color: rgba(var(--app-primary-rgb), 0.66);
+        }
+    </style>
+}
+
 <div class="container-fluid mt-3">
     @Html.AntiForgeryToken()
     <div class="app-page-header mb-3">
@@ -25,6 +63,12 @@
 
     <div class="card">
         <div class="card-body p-0">
+            <div class="px-3 pt-3 pb-0 d-none" id="muafListeBilgiAlani">
+                <div class="muaf-liste-bant" role="status">
+                    <span class="muaf-liste-bant__text"><i class="fa-solid fa-ban me-2"></i>Analizden muaf tutulan test kayıtları listeleniyor.</span>
+                    <button type="button" class="btn btn-sm muaf-liste-btn" id="muafListeKapatBtn">Normal listeye dön</button>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0 w-100" id="trafoTable">
                 <thead>
@@ -54,8 +98,26 @@
         $(document).ready(function () {
             const aramaMetni = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(aramaMetni));
             const deleteAnimationMs = 230;
+            const muafButonHtml = `
+                <button type="button" class="btn btn-sm muaf-liste-btn" id="muafKayitlarBtn">
+                    <i class="fa-solid fa-ban me-1"></i>Analizden Muaf Tutulan Projeler
+                </button>
+            `;
+            let sadeceMuafKayitlar = false;
 
-            $('#trafoTable').DataTable({
+            function muafListeDurumunuUygula() {
+                const $filter = $('.dataTables_filter');
+                const bilgiAlani = document.getElementById('muafListeBilgiAlani');
+
+                $filter.addClass('d-flex justify-content-end align-items-center');
+                $filter.html(sadeceMuafKayitlar ? '' : muafButonHtml);
+
+                if (bilgiAlani) {
+                    bilgiAlani.classList.toggle('d-none', !sadeceMuafKayitlar);
+                }
+            }
+
+            const table = $('#trafoTable').DataTable({
                 "ajax": {
                     "url": "/TrafoTests/GetTrafolar",
                     "type": "GET",
@@ -63,6 +125,7 @@
                         if (aramaMetni) {
                             d.q = aramaMetni;
                         }
+                        d.excludedOnly = sadeceMuafKayitlar;
                     },
                     "datatype": "json"
                 },
@@ -161,7 +224,13 @@
                 "order": [[0, "desc"]],
                 "drawCallback": function() {
                     $(".dataTables_paginate > .pagination").addClass("pagination-sm");
+                    muafListeDurumunuUygula();
                 }
+            });
+
+            $(document).on('click', '#muafKayitlarBtn, #muafListeKapatBtn', function () {
+                sadeceMuafKayitlar = !sadeceMuafKayitlar;
+                table.ajax.reload(null, true);
             });
 
             $('#trafoTable').on('click', '.js-delete-trafo', async function () {
@@ -175,7 +244,29 @@
                     text: 'Bu işlem geri alınamaz.',
                     showCancelButton: true,
                     confirmButtonText: 'Sil',
-                    cancelButtonText: 'Vazgeç'
+                    cancelButtonText: 'Vazgeç',
+                    didRender(modal) {
+                        const confirmBtn = modal.querySelector('.swal2-confirm');
+                        if (confirmBtn) {
+                            confirmBtn.classList.add('btn-swal-danger');
+                        }
+                        
+                        const cancelBtn = modal.querySelector('.swal2-cancel');
+                        if (cancelBtn) {
+                            cancelBtn.style.background = '#ffffff';
+                            cancelBtn.style.color = '#5a607b';
+                            cancelBtn.style.border = '1.5px solid rgba(115, 103, 240, 0.4)';
+                            cancelBtn.style.borderRadius = '12px';
+                            cancelBtn.style.padding = '0.65rem 1.5rem';
+                            cancelBtn.style.fontFamily = '"Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                            cancelBtn.style.fontSize = '0.95rem';
+                            cancelBtn.style.fontWeight = '600';
+                            cancelBtn.style.cursor = 'pointer';
+                            cancelBtn.style.transition = 'all 0.24s cubic-bezier(0.4, 0, 0.2, 1)';
+                            cancelBtn.style.lineHeight = '1.4';
+                            cancelBtn.style.boxShadow = 'none';
+                        }
+                    }
                 });
 
                 if (!result.isConfirmed) {
@@ -210,7 +301,7 @@
                     $row.addClass('app-row-removing');
                     await new Promise(resolve => setTimeout(resolve, deleteAnimationMs));
 
-                    $('#trafoTable').DataTable().ajax.reload(null, false);
+                    table.ajax.reload(null, false);
                 } catch (error) {
                     Swal.fire({
                         icon: 'error',

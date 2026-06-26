@@ -2522,3 +2522,51 @@ a {
 #wdr-toolbar-wrapper .wdr-toolbar-ui {
   font-family: "Public Sans", system-ui, sans-serif !important;
 }
+
+/* ──────────────────────── Switch Button Styling ──────────────────────── */
+.switch-exclude .form-check-input {
+  width: 3.5em;
+  height: 1.8em;
+  border-radius: 999px;
+  background-color: #d9d9e8;
+  border: 1px solid #d9d9e8;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.switch-exclude .form-check-input:checked {
+  background-color: #7367f0;
+  border-color: #7367f0;
+  box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.25);
+}
+
+.switch-exclude .form-check-input:focus {
+  border-color: #7367f0;
+  box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.25);
+}
+
+.switch-exclude .form-check-input::after {
+  width: 1.4em;
+  height: 1.4em;
+  border-radius: 50%;
+  background-color: white;
+  transition: all 0.3s ease;
+  top: calc(0.2em);
+  left: calc(0.2em);
+}
+
+.switch-exclude .form-check-input:checked::after {
+  left: calc(100% - 1.6em);
+}
+
+/* Dark mode support */
+:root[data-bs-theme="dark"] .switch-exclude .form-check-input {
+  background-color: #454766;
+  border-color: #454766;
+}
+
+:root[data-bs-theme="dark"] .switch-exclude .form-check-input:checked {
+  background-color: #7367f0;
+  border-color: #7367f0;
+}

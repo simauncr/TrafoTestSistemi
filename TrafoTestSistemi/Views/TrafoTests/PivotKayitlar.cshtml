@@ -1,0 +1,68 @@
+@model IEnumerable<TrafoTestSistemi.Models.TrafoTest>
+@{
+    ViewData["Title"] = "Pivot Kayıt Detayı";
+    var drillTitle = ViewBag.DrillTitle as string ?? "Pivot Hücre Detayı";
+}
+
+<div class="container-fluid mt-3">
+    <div class="app-page-header mb-3 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <div>
+            <span class="app-page-header__eyebrow">Pivot Detay</span>
+            <h6 class="mb-0 fw-bold mt-1">@drillTitle</h6>
+        </div>
+        <a asp-action="Analiz" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i>Geri Dön
+        </a>
+    </div>
+
+    <div class="card app-card-muted">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tasarım No</th>
+                            <th>Proje</th>
+                            <th>Müşteri</th>
+                            <th>Sonuç</th>
+                            <th class="text-end">P0 Sapma HT</th>
+                            <th class="text-end">Pk Sapma HT</th>
+                            <th class="text-end">Uk Sapma HT</th>
+                            <th class="text-end">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">Kayıt bulunamadı.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>@item.TasarimNo</td>
+                                    <td>@item.ProjeAdi</td>
+                                    <td>@item.Musteri</td>
+                                    <td>
+                                        <span class="badge @(item.Sonuc != null && item.Sonuc.Contains("DEĞİL") ? "bg-danger" : "bg-success")">@item.Sonuc</span>
+                                    </td>
+                                    <td class="text-end">@item.P0_Sapma_HT.ToString("N2")</td>
+                                    <td class="text-end">@item.Pk_Sapma_HT.ToString("N2")</td>
+                                    <td class="text-end">@item.Uk_Sapma_HT.ToString("N2")</td>
+                                    <td class="text-end">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Görüntüle</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

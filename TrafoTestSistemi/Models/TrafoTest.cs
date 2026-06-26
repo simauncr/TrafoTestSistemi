@@ -177,6 +177,12 @@ namespace TrafoTestSistemi.Models
         public double P55_Sapma_MGT { get; set; }
         public double P55_Sapma_MHT { get; set; }
 
+        public double SapmaGH { get; set; }
+        public double SapmaGT { get; set; }
+        public double SapmaHT { get; set; }
+
+        public bool IsExcluded { get; set; } = false;
+
         public string Sonuc { get; set; } = "BEKLEMEDE";
 
         public void Hesapla()
@@ -240,6 +246,10 @@ namespace TrafoTestSistemi.Models
             P55_Sapma_EGH = P55_ElekGaran != 0 ? Math.Round((P55_MekHesap - P55_ElekGaran) / P55_ElekGaran * 100, 2) : 0;
             P55_Sapma_MGT = P55_ElekGaran != 0 ? Math.Round((P55_Test - P55_ElekGaran) / P55_ElekGaran * 100, 2) : 0;
             P55_Sapma_MHT = P55_MekHesap != 0 ? Math.Round((P55_Test - P55_MekHesap) / P55_MekHesap * 100, 2) : 0;
+
+            SapmaGH = Math.Round((P0_Sapma_GH + Pk_Sapma_GH + Uk_Sapma_GH) / 3.0, 2);
+            SapmaGT = Math.Round((P0_Sapma_GT + Pk_Sapma_GT + Uk_Sapma_GT) / 3.0, 2);
+            SapmaHT = Math.Round((P0_Sapma_HT + Pk_Sapma_HT + Uk_Sapma_HT) / 3.0, 2);
 
                         bool hataVar = (Math.Abs(P0_Sapma_HT) > P0_Tolerans) ||
                                                      (Math.Abs(Pk_Sapma_HT) > Pk_Tolerans) ||

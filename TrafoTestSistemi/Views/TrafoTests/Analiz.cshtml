@@ -1,6 +1,8 @@
 @{
     ViewData["Title"] = "Trafo Analiz Raporu";
     var analysisJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.AnalysisRecords ?? new List<object>());
+    var forcePivotResetJson = System.Text.Json.JsonSerializer.Serialize((bool?)(ViewBag.ForcePivotReset) ?? false);
+    var masterDimensionValuesJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.MasterDimensionValues ?? new Dictionary<string, List<string>>());
 }
 
 <div class="container-fluid mt-3">
@@ -16,6 +18,12 @@
                 <h6 class="mb-1 fw-bold">Kurumsal Dinamik Pivot Analiz Modülü</h6>
             </div>
             <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--duzenle" id="pivotDuzenleBtn" style="display:none;" title="Bu tabloyu düzenle">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--lila" id="pivotGuncelleBtn" style="display:none;" title="Mevcut kayıtlı tabloyu güncelle">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>Değişiklikleri Kaydet
+                </button>
                 <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--excel" id="excelBtn">
                     <i class="fa-solid fa-file-excel me-1"></i>Excel
                 </button>
@@ -75,7 +83,10 @@
 
                     <div class="pivot-report-wrap" id="pivotReportWrap">
                         <div class="pivot-report-actions">
-                            <div class="d-flex align-items-center gap-2 ms-auto">
+                            <div id="pivotReportTitle" class="pivot-report-title">
+                                <span id="aktifKayitAdiLabel">Görüntülenen tablo: Yeni Rapor Tasarımı</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
                                 <div class="dropdown" id="aktifFiltreDropdownWrap" style="display:none;">
                                     <button type="button" class="btn btn-sm pivot-action-btn pivot-action-btn--lila dropdown-toggle" id="aktifFiltreBtn" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fa-solid fa-filter me-1"></i>Filtreler
@@ -205,6 +216,10 @@
             font-weight: 700;
             border: 1px solid transparent;
             padding-inline: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
         }
 
         .pivot-action-btn--lila {
@@ -252,6 +267,23 @@
             color: #fff;
         }
 
+        .pivot-action-btn--duzenle {
+            background: rgba(var(--app-primary-rgb), 0.10);
+            color: var(--app-primary);
+            border-color: rgba(var(--app-primary-rgb), 0.4);
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+        }
+
+        .pivot-action-btn--duzenle:hover {
+            background: var(--app-primary);
+            color: #fff;
+            border-color: var(--app-primary);
+        }
+
         .pivot-action-btn--pdf {
             background: transparent;
             color: #c62828;
@@ -266,9 +298,13 @@
         .pivot-panel-card {
             border: 1px solid var(--app-border);
             border-radius: 12px;
-            background: #fff;
+            background: var(--app-surface);
             padding: 0.9rem;
             box-shadow: 0 0.25rem 0.7rem rgba(161, 172, 184, 0.1);
+        }
+
+        :root[data-bs-theme="dark"] .pivot-panel-card {
+            box-shadow: 0 0.25rem 0.7rem rgba(0, 0, 0, 0.2);
         }
 
         .pivot-fields-card {
@@ -359,10 +395,15 @@
         .pivot-zone {
             border: 1px solid rgba(var(--app-primary-rgb), 0.24);
             border-radius: 10px;
-            background: rgba(235, 235, 237, 0.9);
+            background: var(--app-surface-muted);
             min-height: 88px;
             display: flex;
             flex-direction: column;
+        }
+
+        :root[data-bs-theme="dark"] .pivot-zone {
+            background: rgba(49, 50, 74, 0.8);
+            border-color: rgba(156, 140, 252, 0.3);
         }
 
         .pivot-zone__title {
@@ -395,7 +436,7 @@
         .pivot-tag {
             border: 1px solid rgba(var(--app-primary-rgb), 0.28);
             border-radius: 999px;
-            background: #fff;
+            background: var(--app-surface);
             color: var(--app-heading);
             font-size: 0.76rem;
             font-weight: 600;
@@ -405,6 +446,11 @@
             align-items: center;
             gap: 0.38rem;
             cursor: grab;
+        }
+
+        :root[data-bs-theme="dark"] .pivot-tag {
+            border-color: rgba(156, 140, 252, 0.35);
+            background: rgba(156, 140, 252, 0.12);
         }
 
         .pivot-tag__meta {
@@ -427,10 +473,14 @@
         .pivot-report-wrap {
             border: 1px solid var(--app-border);
             border-radius: 12px;
-            background: #fff;
+            background: var(--app-surface);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+        }
+
+        :root[data-bs-theme="dark"] .pivot-report-wrap {
+            border-color: rgba(58, 61, 88, 0.9);
         }
 
         #analizCalismaAlani.pivot-kayit-odak > .col-12.col-xl-2 {
@@ -442,7 +492,6 @@
             max-width: 100%;
         }
 
-        #analizCalismaAlani.pivot-kayit-odak .pivot-report-actions,
         #analizCalismaAlani.pivot-kayit-odak .pivot-save-row {
             display: none;
         }
@@ -456,7 +505,7 @@
             position: absolute;
             inset: 0;
             transition: transform 0.34s ease, opacity 0.34s ease;
-            background: #fff;
+            background: var(--app-surface);
         }
 
         .pivot-view-panel--table {
@@ -495,16 +544,37 @@
             padding: 0.58rem 0.7rem;
             border-bottom: 1px solid var(--app-border);
             display: flex;
-            justify-content: flex-end;
-            background: #fff;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--app-surface);
+        }
+
+        .pivot-report-actions .pivot-report-title {
+            display: flex;
+            align-items: center;
+            color: #2c3e50;
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .pivot-report-actions .pivot-report-title span {
+            display: inline-block;
+            line-height: 1.2;
         }
 
         .pivot-filter-dropdown-menu {
             min-width: 340px;
             border: 1px solid rgba(var(--app-primary-rgb), 0.2);
             border-radius: 10px;
-            background: #fff;
+            background: var(--app-surface);
             box-shadow: 0 0.4rem 1rem rgba(115, 103, 240, 0.12);
+        }
+
+        :root[data-bs-theme="dark"] .pivot-filter-dropdown-menu {
+            border-color: rgba(156, 140, 252, 0.25);
+            box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.3);
         }
 
         .pivot-filter-dropdown-grid {
@@ -520,21 +590,110 @@
             color: var(--app-heading);
         }
 
-        .pivot-filter-control select {
+        .pivot-filter-search {
+            width: 100%;
             min-height: 30px;
             font-size: 0.79rem;
             border-radius: 8px;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.22);
+            background: rgba(var(--app-primary-rgb), 0.04);
+            color: var(--app-heading);
+            padding: 0.34rem 0.55rem;
+        }
+
+        .pivot-filter-search:focus {
+            outline: 0;
+            border-color: rgba(var(--app-primary-rgb), 0.48);
+            box-shadow: 0 0 0 0.16rem rgba(var(--app-primary-rgb), 0.14);
+        }
+
+        .pivot-filter-list {
+            max-height: 220px;
+            overflow: auto;
+            margin-top: 0.35rem;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.14);
+            border-radius: 10px;
+            background: rgba(var(--app-primary-rgb), 0.025);
+            padding: 0.2rem;
+        }
+
+        .pivot-filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.42rem;
+            padding: 0.28rem 0.34rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            color: var(--app-heading);
+            line-height: 1.2;
+            cursor: pointer;
+        }
+
+        .pivot-filter-option:hover {
+            background: rgba(var(--app-primary-rgb), 0.12);
+        }
+
+        .pivot-filter-option input[type="checkbox"] {
+            accent-color: var(--app-primary);
+            cursor: pointer;
+        }
+
+        .pivot-filter-empty {
+            font-size: 0.74rem;
+            color: var(--app-muted);
+            padding: 0.42rem;
+        }
+
+        .pivot-dim-combobox {
+            position: fixed;
+            z-index: 1085;
+            width: 280px;
+            max-width: calc(100vw - 24px);
+            border: 1px solid rgba(var(--app-primary-rgb), 0.22);
+            border-radius: 12px;
+            background: var(--app-surface);
+            box-shadow: 0 0.55rem 1.2rem rgba(115, 103, 240, 0.18);
+            padding: 0.55rem;
+        }
+
+        .pivot-dim-combobox__title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--app-heading);
+            margin-bottom: 0.38rem;
+        }
+
+        .pivot-dim-combobox__list {
+            max-height: 230px;
+            overflow: auto;
+            border: 1px solid rgba(var(--app-primary-rgb), 0.14);
+            border-radius: 10px;
+            background: rgba(var(--app-primary-rgb), 0.03);
+            padding: 0.2rem;
+        }
+
+        .pivot-tag__title {
+            cursor: pointer;
+        }
+
+        .pivot-tag__title:hover {
+            color: var(--app-primary);
         }
 
         .pivot-chart-wrap {
             height: 40vh;
             border: 1px solid rgba(var(--app-primary-rgb), 0.16);
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.8);
+            background: var(--app-surface);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             box-shadow: 0 0.75rem 1.2rem rgba(69, 79, 99, 0.12);
             padding: 0.6rem;
+        }
+
+        :root[data-bs-theme="dark"] .pivot-chart-wrap {
+            border-color: rgba(156, 140, 252, 0.2);
+            box-shadow: 0 0.75rem 1.2rem rgba(0, 0, 0, 0.25);
         }
 
         .pivot-empty-state {
@@ -556,19 +715,35 @@
         }
 
         .pivot-result-table {
-            --bs-table-bg: #fff;
-            --bs-table-striped-bg: #fafafe;
-            --bs-table-hover-bg: #f5f4fc;
+            --bs-table-bg: var(--app-surface);
+            --bs-table-striped-bg: var(--app-surface-muted);
+            --bs-table-hover-bg: rgba(115, 103, 240, 0.08);
             --bs-table-border-color: rgba(115, 103, 240, 0.12);
             margin: 0;
             min-width: 1100px;
             width: max-content;
         }
 
+        :root[data-bs-theme="dark"] .pivot-result-table {
+            --bs-table-bg: var(--app-surface);
+            --bs-table-striped-bg: rgba(49, 50, 74, 0.7);
+            --bs-table-hover-bg: rgba(156, 140, 252, 0.15);
+            --bs-table-border-color: rgba(156, 140, 252, 0.15);
+        }
+
         .pivot-result-table th,
         .pivot-result-table td {
             padding: 0.58rem 0.72rem;
             font-size: 0.82rem;
+
+        .pivot-result-table td.pivot-drill-cell {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .pivot-result-table td.pivot-drill-cell:hover {
+            background: rgba(var(--app-primary-rgb), 0.12);
+        }
             line-height: 1.2;
             vertical-align: middle;
             color: var(--app-heading);
@@ -588,7 +763,7 @@
             display: flex;
             justify-content: flex-end;
             padding: 0.4rem 0.6rem 0.6rem;
-            background: #fff;
+            background: var(--app-surface);
         }
 
         .pivot-save-mini {
@@ -613,9 +788,14 @@
         .pivot-saved-page {
             border: 1px solid var(--app-border);
             border-radius: 12px;
-            background: #fff;
+            background: var(--app-surface);
             box-shadow: 0 0.25rem 0.7rem rgba(161, 172, 184, 0.1);
             overflow: hidden;
+        }
+
+        :root[data-bs-theme="dark"] .pivot-saved-page {
+            border-color: rgba(58, 61, 88, 0.9);
+            box-shadow: 0 0.25rem 0.7rem rgba(0, 0, 0, 0.2);
         }
 
         .pivot-saved-page__header {
@@ -626,6 +806,11 @@
             justify-content: space-between;
             gap: 0.8rem;
             background: rgba(var(--app-primary-rgb), 0.06);
+        }
+
+        :root[data-bs-theme="dark"] .pivot-saved-page__header {
+            background: rgba(156, 140, 252, 0.1);
+            border-bottom-color: rgba(156, 140, 252, 0.2);
         }
 
         .pivot-saved-page__body {
@@ -665,11 +850,16 @@
         }
 
         .swal2-popup.pivot-swal {
-            background: linear-gradient(180deg, #ffffff, #fcfcff);
+            background: linear-gradient(180deg, var(--app-surface), var(--app-surface-muted));
             border: 1px solid rgba(231, 231, 239, 0.82);
             border-radius: 20px;
             box-shadow: 0 1.1rem 2.6rem rgba(31, 39, 48, 0.12);
             padding: 1.35rem 1.35rem 1.15rem;
+        }
+
+        :root[data-bs-theme="dark"] .swal2-popup.pivot-swal {
+            border-color: rgba(58, 61, 88, 0.95);
+            box-shadow: 0 1.1rem 2.6rem rgba(0, 0, 0, 0.3);
         }
 
         .swal2-actions.pivot-swal-actions {
@@ -822,6 +1012,8 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const analysisRecords = @Html.Raw(analysisJson);
+            const forcePivotReset = @Html.Raw(forcePivotResetJson);
+            const masterDimensionValues = @Html.Raw(masterDimensionValuesJson);
 
             const fieldMeta = {
                 Musteri: { label: "Müşteri", type: "dimension" },
@@ -840,13 +1032,22 @@
                 Sonuc: { label: "Sonuç", type: "dimension" },
                 TestTarihi: { label: "Test Tarihi", type: "dimension" },
                 DizaynTarihi: { label: "Dizayn Tarihi", type: "dimension" },
-                GucKVA: { label: "Güç (kVA)", type: "measure" },
-                GerilimYG: { label: "YG Gerilim", type: "measure" },
-                GerilimAG: { label: "AG Gerilim", type: "measure" },
-                Frekans: { label: "Frekans", type: "measure" },
-                P0Sapma: { label: "P0 Sapma", type: "measure" },
-                PkSapma: { label: "Pk Sapma", type: "measure" },
-                UkSapma: { label: "UK Sapma", type: "measure" }
+                GucKVA: { label: "Güç (kVA)", type: "measure", dataType: "number" },
+                GerilimYG: { label: "YG Gerilim", type: "measure", dataType: "number" },
+                GerilimAG: { label: "AG Gerilim", type: "measure", dataType: "number" },
+                Frekans: { label: "Frekans", type: "measure", dataType: "number" },
+                // Grouped sapma fields (P0 / Pk / Uk) - numeric measures
+                P0SapmaGH: { label: "P0 Sapma GH", type: "measure", dataType: "number" },
+                P0SapmaGT: { label: "P0 Sapma GT", type: "measure", dataType: "number" },
+                P0SapmaHT: { label: "P0 Sapma HT", type: "measure", dataType: "number" },
+
+                PkSapmaGH: { label: "Pk Sapma GH", type: "measure", dataType: "number" },
+                PkSapmaGT: { label: "Pk Sapma GT", type: "measure", dataType: "number" },
+                PkSapmaHT: { label: "Pk Sapma HT", type: "measure", dataType: "number" },
+
+                UkSapmaGH: { label: "Uk Sapma GH", type: "measure", dataType: "number" },
+                UkSapmaGT: { label: "Uk Sapma GT", type: "measure", dataType: "number" },
+                UkSapmaHT: { label: "Uk Sapma HT", type: "measure", dataType: "number" }
             };
 
             const aggLabel = {
@@ -862,7 +1063,35 @@
                 return Number.isFinite(n) ? n : 0;
             }
 
+            function normalizeSonuc(value) {
+                const raw = String(value || "").trim();
+                if (!raw) {
+                    return "BEKLEMEDE";
+                }
+
+                const upper = raw.toLocaleUpperCase("tr-TR");
+                const normalized = upper
+                    .replace(/Ç/g, "C")
+                    .replace(/Ğ/g, "G")
+                    .replace(/İ/g, "I")
+                    .replace(/I/g, "I")
+                    .replace(/Ö/g, "O")
+                    .replace(/Ş/g, "S")
+                    .replace(/Ü/g, "U");
+
+                if (normalized.includes("UYGUN DEGIL") || normalized.includes("DEGIL") || normalized.includes("HATALI") || normalized.includes("KALDI") || normalized.includes("FAIL")) {
+                    return "UYGUN DEĞİL";
+                }
+
+                if (normalized.includes("UYGUN") || normalized.includes("GECTI") || normalized.includes("PASS")) {
+                    return "UYGUN";
+                }
+
+                return upper;
+            }
+
             const data = analysisRecords.map(r => ({
+                Id: toNumber(r.Id),
                 Musteri: r.Musteri || "Tanımsız",
                 ProjeAdi: r.ProjeAdi || "Tanımsız",
                 TasarimNo: r.TasarimNo || "Tanımsız",
@@ -876,16 +1105,25 @@
                 SacCinsi: r.SacCinsi || "Tanımsız",
                 KazanCinsi: r.KazanCinsi || "Tanımsız",
                 YagCinsi: r.YagCinsi || "Tanımsız",
-                Sonuc: r.Sonuc || "BEKLEMEDE",
+                Sonuc: normalizeSonuc(r.Sonuc),
                 TestTarihi: r.TestTarihi || "-",
                 DizaynTarihi: r.DizaynTarihi || "-",
                 GucKVA: toNumber(r.Guc),
                 GerilimYG: toNumber(r.GerilimYG),
                 GerilimAG: toNumber(r.GerilimAG),
                 Frekans: toNumber(r.Frekans),
-                P0Sapma: toNumber(r.P0Sapma),
-                PkSapma: toNumber(r.PkSapma),
-                UkSapma: toNumber(r.UkSapma)
+                // Individual grouped sapma values from model (decimal/number)
+                P0SapmaGH: toNumber(r.P0_Sapma_GH),
+                P0SapmaGT: toNumber(r.P0_Sapma_GT),
+                P0SapmaHT: toNumber(r.P0_Sapma_HT),
+
+                PkSapmaGH: toNumber(r.Pk_Sapma_GH),
+                PkSapmaGT: toNumber(r.Pk_Sapma_GT),
+                PkSapmaHT: toNumber(r.Pk_Sapma_HT),
+
+                UkSapmaGH: toNumber(r.Uk_Sapma_GH),
+                UkSapmaGT: toNumber(r.Uk_Sapma_GT),
+                UkSapmaHT: toNumber(r.Uk_Sapma_HT)
             }));
 
             const state = {
@@ -897,12 +1135,37 @@
                 filterValues: {},
                 chartModel: null,
                 chartInstance: null,
+                activeChartType: null,
                 options: {
                     showGrandTotals: true,
                     compactRows: false,
                     decimalPlaces: 2
                 }
             };
+            let kullaniciElleDegisiklikYapti = false;
+            let aktifKayitAdi = "Yeni Rapor Tasarımı";
+            const aktifKayitAdiLabel = document.getElementById("aktifKayitAdiLabel");
+
+            function setActivePivotAdi(ad) {
+                aktifKayitAdi = (ad || "").trim() || "Yeni Rapor Tasarımı";
+                if (!aktifKayitAdiLabel) {
+                    return;
+                }
+                aktifKayitAdiLabel.textContent = `Görüntülenen tablo: ${aktifKayitAdi}`;
+                aktifKayitAdiLabel.style.display = "inline-block";
+            }
+
+            function setActivePivotState(id, ad) {
+                aktifKayitId = Number(id) > 0 ? Number(id) : null;
+                setActivePivotAdi(ad);
+                if (aktifKayitId) {
+                    kayitliTabloOdakModuAyarla(true);
+                }
+            }
+
+            function kullaniciEtkilesiminiIsaretle() {
+                kullaniciElleDegisiklikYapti = true;
+            }
 
             function isValidZoneForField(fieldKey, zone) {
                 const meta = fieldMeta[fieldKey];
@@ -937,6 +1200,14 @@
             const kayitliTablolarListe = document.getElementById("kayitliTablolarListe");
             const analizeDonBtn = document.getElementById("analizeDonBtn");
             const pivotKaydetBtn = document.getElementById("pivotKaydetBtn");
+            const pivotDraftStorageKey = "trafo:pivot:draft";
+            const pivotDuzenleBtn = document.getElementById("pivotDuzenleBtn");
+            const pivotGuncelleBtn = document.getElementById("pivotGuncelleBtn");
+            let aktifKayitId = null;
+            const editPivotId = Number(new URLSearchParams(location.search).get("editPivot"));
+            const viewPivotId = Number(new URLSearchParams(location.search).get("viewPivot"));
+            const sayfadaEditModu = Number.isFinite(editPivotId) && editPivotId > 0;
+            let activeDimensionPicker = null;
 
             function kayitliTablolarButonunuAyarla(geriDonModu) {
                 if (geriDonModu) {
@@ -958,8 +1229,22 @@
                     .replace(/'/g, "&#39;");
             }
 
+            async function parseJsonResponseSafe(response) {
+                const raw = await response.text();
+                if (!raw || !raw.trim()) {
+                    return {};
+                }
+
+                try {
+                    return JSON.parse(raw);
+                } catch {
+                    const preview = raw.slice(0, 120);
+                    throw new Error(`Sunucu geçersiz yanıt döndürdü (${response.status}). ${preview}`);
+                }
+            }
+
             function mevcutKonfigOlustur() {
-                return {
+                const konfig = {
                     rows: [...state.rows],
                     columns: [...state.columns],
                     filters: [...state.filters],
@@ -971,29 +1256,110 @@
                         decimalPlaces: Number(state.options.decimalPlaces)
                     }
                 };
+                console.log("[Pivot] Konfig oluşturuldu:", konfig);
+                return konfig;
+            }
+
+            function pivotTaslakKaydet() {
+                try {
+                    sessionStorage.setItem(pivotDraftStorageKey, JSON.stringify(mevcutKonfigOlustur()));
+                } catch {
+                }
+            }
+
+            function pivotTaslakTemizle() {
+                try {
+                    sessionStorage.removeItem(pivotDraftStorageKey);
+                } catch {
+                }
+            }
+
+            function pivotTaslakYukle() {
+                try {
+                    const raw = sessionStorage.getItem(pivotDraftStorageKey);
+                    if (!raw) {
+                        return false;
+                    }
+
+                    const konfig = JSON.parse(raw);
+                    konfigUygula(konfig);
+                    return true;
+                } catch {
+                    return false;
+                }
+            }
+
+            function pivotDurumunuSifirla() {
+                state.rows = [];
+                state.columns = [];
+                state.values = [];
+                state.filters = [];
+                state.filterValues = {};
+                aktifKayitId = null;
+                setActivePivotAdi("");
+                kayitliTabloOdakModuAyarla(false);
+                renderZoneTags();
+                renderFilterInputs();
+                buildPivot();
+                pivotTaslakTemizle();
             }
 
             function konfigUygula(konfig) {
                 if (!konfig) {
+                    console.warn("[Pivot] Konfig boş veya tanımsız");
                     return;
                 }
 
-                const diziTemizle = (dizi, tur) => (Array.isArray(dizi) ? dizi : [])
-                    .filter(k => fieldMeta[k] && (!tur || fieldMeta[k].type === tur));
+                console.log("[Pivot] Konfig uygulanıyor:", konfig);
+                console.log("[Pivot] Mevcut fieldMeta anahtarları:", Object.keys(fieldMeta).sort());
+
+                const diziTemizle = (dizi, tur) => {
+                    if (!Array.isArray(dizi)) {
+                        return [];
+                    }
+                    const sonuc = dizi.filter(k => {
+                        const mevcuMu = !!fieldMeta[k];
+                        const turUygunMu = !tur || (fieldMeta[k] && fieldMeta[k].type === tur);
+                        if (!mevcuMu) {
+                            console.warn(`[Pivot] Alan bulunmadı: "${k}" (tip: ${tur || "any"})`);
+                        }
+                        return mevcuMu && turUygunMu;
+                    });
+                    console.log(`[Pivot] Temizlenmiş dizi (${tur || "mixed"}): ${dizi.length} → ${sonuc.length}`);
+                    return sonuc;
+                };
 
                 state.rows = diziTemizle(konfig.rows, "dimension");
                 state.columns = diziTemizle(konfig.columns, "dimension");
                 state.filters = diziTemizle(konfig.filters, "dimension");
 
                 state.values = (Array.isArray(konfig.values) ? konfig.values : [])
-                    .filter(v => v && fieldMeta[v.key] && ["sum", "avg", "count", "min", "max"].includes(v.agg))
+                    .filter(v => {
+                        const mevcuMu = v && !!fieldMeta[v.key];
+                        const aggValidMi = v && ["sum", "avg", "count", "min", "max"].includes(v.agg);
+                        if (!mevcuMu) {
+                            console.warn(`[Pivot] Ölçü alanı bulunmadı: "${v?.key}" (agg: ${v?.agg})`);
+                        }
+                        return mevcuMu && aggValidMi;
+                    })
                     .map(v => ({ key: v.key, agg: v.agg }));
 
                 state.filterValues = {};
                 if (konfig.filterValues && typeof konfig.filterValues === "object") {
                     Object.keys(konfig.filterValues).forEach(key => {
                         if (state.filters.includes(key)) {
-                            state.filterValues[key] = konfig.filterValues[key];
+                            const current = konfig.filterValues[key];
+                            if (Array.isArray(current)) {
+                                setSelectedFilterValues(key, current);
+                            } else if (typeof current === "string") {
+                                if (current.trim()) {
+                                    setSelectedFilterValues(key, [current]);
+                                } else {
+                                    clearSelectedFilterValues(key);
+                                }
+                            } else {
+                                clearSelectedFilterValues(key);
+                            }
                         }
                     });
                 }
@@ -1010,6 +1376,13 @@
                 document.getElementById("compactRows").checked = state.options.compactRows;
                 document.getElementById("decimalPlaces").value = String(state.options.decimalPlaces);
 
+                console.log("[Pivot] Konfigürasyon uygulandı:", {
+                    rows: state.rows.length,
+                    columns: state.columns.length,
+                    filters: state.filters.length,
+                    values: state.values.length
+                });
+
                 renderZoneTags();
                 renderFilterInputs();
                 setView("table");
@@ -1017,8 +1390,16 @@
             }
 
             function kayitliTabloOdakModuAyarla(aktif) {
-                analizCalismaAlani.classList.toggle("pivot-kayit-odak", !!aktif);
+                const duzenlemeModuAktif = !!aktif && !!aktifKayitId && sayfadaEditModu;
+                const odakModu = !!aktif && !duzenlemeModuAktif;
+                analizCalismaAlani.classList.toggle("pivot-kayit-odak", odakModu);
                 kayitliTablolarButonunuAyarla(!!aktif);
+                if (pivotDuzenleBtn) {
+                    pivotDuzenleBtn.style.display = (!!aktif && aktifKayitId && !sayfadaEditModu) ? "inline-flex" : "none";
+                }
+                if (pivotGuncelleBtn) {
+                    pivotGuncelleBtn.style.display = duzenlemeModuAktif ? "inline-flex" : "none";
+                }
                 syncStageHeight();
             }
 
@@ -1077,15 +1458,7 @@
                             if (!Number.isFinite(kayitId) || kayitId <= 0) {
                                 return;
                             }
-                            try {
-                                await pivotTabloYukle(kayitId);
-                            } catch (error) {
-                                await Swal.fire({
-                                    icon: "error",
-                                    title: "Hata",
-                                    text: error.message || "Kayıt yüklenemedi."
-                                });
-                            }
+                            window.open(`/TrafoTests/Analiz?viewPivot=${kayitId}`, "_blank");
                         });
                     });
 
@@ -1109,6 +1482,11 @@
             }
 
             async function pivotTabloYukle(id) {
+                emptyState.style.display = "block";
+                emptyState.querySelector("h6").textContent = "Tablo yükleniyor...";
+                tableHolder.style.display = "none";
+                pivotKaydetBtn.style.display = "none";
+
                 const response = await fetch(`/TrafoTests/PivotTabloDetay?id=${id}`, {
                     method: "GET",
                     headers: { "X-Requested-With": "XMLHttpRequest" }
@@ -1126,6 +1504,7 @@
                 }
 
                 const konfig = JSON.parse(konfigJson);
+                setActivePivotState(id, detay.ad || detay.Ad || "");
                 konfigUygula(konfig);
                 analizGorunumunuAc(true);
             }
@@ -1137,7 +1516,29 @@
                     text: "Bu işlem geri alınamaz.",
                     showCancelButton: true,
                     confirmButtonText: "Sil",
-                    cancelButtonText: "Vazgeç"
+                    cancelButtonText: "Vazgeç",
+                    didRender(modal) {
+                        const confirmBtn = modal.querySelector('.swal2-confirm');
+                        if (confirmBtn) {
+                            confirmBtn.classList.add('btn-swal-danger');
+                        }
+                        
+                        const cancelBtn = modal.querySelector('.swal2-cancel');
+                        if (cancelBtn) {
+                            cancelBtn.style.background = '#ffffff';
+                            cancelBtn.style.color = '#5a607b';
+                            cancelBtn.style.border = '1.5px solid rgba(115, 103, 240, 0.4)';
+                            cancelBtn.style.borderRadius = '12px';
+                            cancelBtn.style.padding = '0.65rem 1.5rem';
+                            cancelBtn.style.fontFamily = '"Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                            cancelBtn.style.fontSize = '0.95rem';
+                            cancelBtn.style.fontWeight = '600';
+                            cancelBtn.style.cursor = 'pointer';
+                            cancelBtn.style.transition = 'all 0.24s cubic-bezier(0.4, 0, 0.2, 1)';
+                            cancelBtn.style.lineHeight = '1.4';
+                            cancelBtn.style.boxShadow = 'none';
+                        }
+                    }
                 });
 
                 if (!onay.isConfirmed) {
@@ -1150,7 +1551,7 @@
                         "Content-Type": "application/json",
                         "X-Requested-With": "XMLHttpRequest"
                     },
-                    body: JSON.stringify({ id })
+                    body: JSON.stringify({ Id: id })
                 });
 
                 const payload = await response.json();
@@ -1235,9 +1636,7 @@
                     return false;
                 }
 
-                if (state.chartInstance) {
-                    state.chartInstance.destroy();
-                }
+                state.activeChartType = chartType;
 
                 const palette = ["#7367F0", "#00CFE8", "#28C76F", "#FF6B6B", "#A66BFF", "#1E9EF7", "#00B894", "#FF9F43"];
                 const base = idx => palette[idx % palette.length];
@@ -1296,151 +1695,182 @@
                     }));
                 }
 
-                state.chartInstance = new Chart(chartCanvas, {
-                    type: chartType,
-                    data: { labels, datasets },
-                    plugins: [createPremiumShadowPlugin()],
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: {
-                            duration: 950,
-                            easing: "easeInOutQuart"
-                        },
-                        interaction: {
-                            mode: "nearest",
-                            intersect: false
-                        },
-                        plugins: {
-                            legend: {
-                                position: "bottom",
-                                labels: {
-                                    usePointStyle: true,
-                                    pointStyle: "circle",
-                                    padding: 14,
-                                    boxWidth: 10,
-                                    color: "#4b4f64",
-                                    font: {
-                                        family: "Public Sans",
-                                        size: 12,
-                                        weight: "600"
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: "rgba(115, 103, 240, 0.94)",
-                                titleColor: "#ffffff",
-                                bodyColor: "#f7f7ff",
-                                borderColor: "rgba(255,255,255,0.36)",
-                                borderWidth: 1,
-                                cornerRadius: 10,
-                                padding: 11,
-                                displayColors: true,
-                                titleFont: {
+                const chartOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 950,
+                        easing: "easeInOutQuart"
+                    },
+                    interaction: {
+                        mode: "nearest",
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: "circle",
+                                padding: 14,
+                                boxWidth: 10,
+                                color: "#4b4f64",
+                                font: {
                                     family: "Public Sans",
                                     size: 12,
-                                    weight: "700"
-                                },
-                                bodyFont: {
-                                    family: "Public Sans",
-                                    size: 12,
-                                    weight: "500"
-                                },
-                                callbacks: {
-                                    title(items) {
-                                        return `Kategori: ${items[0].label}`;
-                                    },
-                                    label(context) {
-                                        const rawVal = (typeof context.parsed === "number")
-                                            ? context.parsed
-                                            : (context.parsed && typeof context.parsed.y === "number" ? context.parsed.y : 0);
-                                        return `${context.dataset.label}: ${Number(rawVal).toLocaleString("tr-TR", {
-                                            minimumFractionDigits: state.options.decimalPlaces,
-                                            maximumFractionDigits: state.options.decimalPlaces
-                                        })}`;
-                                    }
+                                    weight: "600"
                                 }
                             }
                         },
-                        scales: (chartType === "pie" || chartType === "doughnut")
-                            ? {}
-                            : (chartType === "radar"
-                                ? {
-                                    r: {
-                                        angleLines: { color: "rgba(115,103,240,0.15)" },
-                                        grid: { color: "rgba(115,103,240,0.14)" },
-                                        pointLabels: {
-                                            color: "#5a607b",
-                                            font: {
-                                                family: "Public Sans",
-                                                size: 11,
-                                                weight: "600"
-                                            }
-                                        },
-                                        ticks: {
-                                            backdropColor: "transparent",
-                                            color: "#7a809c",
-                                            showLabelBackdrop: false
-                                        }
-                                    }
+                        tooltip: {
+                            backgroundColor: "rgba(115, 103, 240, 0.94)",
+                            titleColor: "#ffffff",
+                            bodyColor: "#f7f7ff",
+                            borderColor: "rgba(255,255,255,0.36)",
+                            borderWidth: 1,
+                            cornerRadius: 10,
+                            padding: 11,
+                            displayColors: true,
+                            titleFont: {
+                                family: "Public Sans",
+                                size: 12,
+                                weight: "700"
+                            },
+                            bodyFont: {
+                                family: "Public Sans",
+                                size: 12,
+                                weight: "500"
+                            },
+                            callbacks: {
+                                title(items) {
+                                    return `Kategori: ${items[0].label}`;
+                                },
+                                label(context) {
+                                    const rawVal = (typeof context.parsed === "number")
+                                        ? context.parsed
+                                        : (context.parsed && typeof context.parsed.y === "number" ? context.parsed.y : 0);
+                                    return `${context.dataset.label}: ${Number(rawVal).toLocaleString("tr-TR", {
+                                        minimumFractionDigits: state.options.decimalPlaces,
+                                        maximumFractionDigits: state.options.decimalPlaces
+                                    })}`;
                                 }
-                                : {
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: "Kırılım",
-                                            color: "#5a607b",
-                                            font: {
-                                                family: "Public Sans",
-                                                size: 12,
-                                                weight: "700"
-                                            }
-                                        },
-                                        ticks: {
-                                            maxRotation: 35,
-                                            minRotation: 0,
-                                            color: "#666f8d",
-                                            font: {
-                                                family: "Public Sans",
-                                                size: 11,
-                                                weight: "500"
-                                            }
-                                        },
-                                        grid: {
-                                            color: "rgba(115,103,240,0.08)"
+                            }
+                        }
+                    },
+                    scales: (chartType === "pie" || chartType === "doughnut")
+                        ? {}
+                        : (chartType === "radar"
+                            ? {
+                                r: {
+                                    angleLines: { color: "rgba(115,103,240,0.15)" },
+                                    grid: { color: "rgba(115,103,240,0.14)" },
+                                    pointLabels: {
+                                        color: "#5a607b",
+                                        font: {
+                                            family: "Public Sans",
+                                            size: 11,
+                                            weight: "600"
                                         }
                                     },
-                                    y: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: "Değer",
-                                            color: "#5a607b",
-                                            font: {
-                                                family: "Public Sans",
-                                                size: 12,
-                                                weight: "700"
-                                            }
-                                        },
-                                        ticks: {
-                                            color: "#666f8d",
-                                            font: {
-                                                family: "Public Sans",
-                                                size: 11,
-                                                weight: "500"
-                                            }
-                                        },
-                                        grid: {
-                                            color: "rgba(115,103,240,0.08)"
-                                        }
+                                    ticks: {
+                                        backdropColor: "transparent",
+                                        color: "#7a809c",
+                                        showLabelBackdrop: false
                                     }
-                                })
+                                }
+                            }
+                            : {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "Kırılım",
+                                        color: "#5a607b",
+                                        font: {
+                                            family: "Public Sans",
+                                            size: 12,
+                                            weight: "700"
+                                        }
+                                    },
+                                    ticks: {
+                                        maxRotation: 35,
+                                        minRotation: 0,
+                                        color: "#666f8d",
+                                        font: {
+                                            family: "Public Sans",
+                                            size: 11,
+                                            weight: "500"
+                                        }
+                                    },
+                                    grid: {
+                                        color: "rgba(115,103,240,0.08)"
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: "Değer",
+                                        color: "#5a607b",
+                                        font: {
+                                            family: "Public Sans",
+                                            size: 12,
+                                            weight: "700"
+                                        }
+                                    },
+                                    ticks: {
+                                        color: "#666f8d",
+                                        font: {
+                                            family: "Public Sans",
+                                            size: 11,
+                                            weight: "500"
+                                        }
+                                    },
+                                    grid: {
+                                        color: "rgba(115,103,240,0.08)"
+                                    }
+                                }
+                            })
+                };
+
+                const chartNeedsRecreate = !state.chartInstance || state.chartInstance.config.type !== chartType;
+                if (chartNeedsRecreate) {
+                    if (state.chartInstance) {
+                        state.chartInstance.destroy();
                     }
-                });
+
+                    state.chartInstance = new Chart(chartCanvas, {
+                        type: chartType,
+                        data: { labels, datasets },
+                        plugins: [createPremiumShadowPlugin()],
+                        options: chartOptions
+                    });
+                } else {
+                    state.chartInstance.data.labels = labels;
+                    state.chartInstance.data.datasets = datasets;
+                    state.chartInstance.options = chartOptions;
+                    state.chartInstance.update();
+                }
 
                 setTimeout(syncStageHeight, 40);
 
                 return true;
+            }
+
+            function syncActiveChartIfVisible() {
+                if (!viewStage.classList.contains("is-chart") || !state.activeChartType) {
+                    return;
+                }
+
+                if (!state.chartModel || !state.chartModel.labels.length) {
+                    if (state.chartInstance) {
+                        state.chartInstance.destroy();
+                        state.chartInstance = null;
+                    }
+                    setView("table");
+                    return;
+                }
+
+                renderChart(state.activeChartType);
             }
 
             function createFieldChip(fieldKey) {
@@ -1474,7 +1904,7 @@
                 });
             }
 
-            function addFieldToZone(fieldKey, zone) {
+            function addFieldToZone(fieldKey, zone, skipRefresh = false) {
                 if (!fieldMeta[fieldKey] || !zone) {
                     return;
                 }
@@ -1496,12 +1926,15 @@
                     state[zone].push(fieldKey);
                 }
 
-                renderZoneTags();
-                renderFilterInputs();
-                buildPivot();
+                if (!skipRefresh) {
+                    kullaniciEtkilesiminiIsaretle();
+                    renderZoneTags();
+                    renderFilterInputs();
+                    buildPivot();
+                }
             }
 
-            function removeFieldFromZone(zone, fieldKey) {
+            function removeFieldFromZone(zone, fieldKey, skipRefresh = false) {
                 if (zone === "values") {
                     state.values = state.values.filter(v => v.key !== fieldKey);
                 } else {
@@ -1510,9 +1943,12 @@
                         delete state.filterValues[fieldKey];
                     }
                 }
-                renderZoneTags();
-                renderFilterInputs();
-                buildPivot();
+                if (!skipRefresh) {
+                    kullaniciEtkilesiminiIsaretle();
+                    renderZoneTags();
+                    renderFilterInputs();
+                    buildPivot();
+                }
             }
 
             function moveFieldBetweenZones(fromZone, toZone, fieldKey) {
@@ -1520,8 +1956,13 @@
                     return;
                 }
 
-                removeFieldFromZone(fromZone, fieldKey);
-                addFieldToZone(fieldKey, toZone);
+                // Keep updates atomic so transient empty states do not overwrite draft/state.
+                removeFieldFromZone(fromZone, fieldKey, true);
+                addFieldToZone(fieldKey, toZone, true);
+                kullaniciEtkilesiminiIsaretle();
+                renderZoneTags();
+                renderFilterInputs();
+                buildPivot();
             }
 
             function renderZoneTags() {
@@ -1554,7 +1995,14 @@
                         });
 
                         const title = document.createElement("span");
+                        title.className = "pivot-tag__title";
                         title.textContent = fieldMeta[fieldKey].label;
+                        if (zoneName !== "values") {
+                            title.addEventListener("click", function (ev) {
+                                ev.stopPropagation();
+                                openDimensionPicker(fieldKey, title);
+                            });
+                        }
                         wrap.appendChild(title);
 
                         if (zoneName === "values") {
@@ -1628,6 +2076,14 @@
 
             function renderFilterInputs() {
                 filterInputs.innerHTML = "";
+                if (filtreDropdownWrap) {
+                    filtreDropdownWrap.style.display = "none";
+                }
+                if (filtreBadge) {
+                    filtreBadge.textContent = "0";
+                }
+                return;
+
                 if (!state.filters.length) {
                     if (filtreDropdownWrap) {
                         filtreDropdownWrap.style.display = "none";
@@ -1650,43 +2106,122 @@
                     label.className = "form-label";
                     label.textContent = fieldMeta[fieldKey].label;
 
-                    const select = document.createElement("select");
-                    select.className = "form-select form-select-sm";
-                    const allOption = document.createElement("option");
-                    allOption.value = "";
-                    allOption.textContent = "Tümü";
-                    select.appendChild(allOption);
+                    const search = document.createElement("input");
+                    search.type = "search";
+                    search.className = "pivot-filter-search";
+                    search.placeholder = "Ara...";
 
-                    const values = [...new Set(data.map(d => String(d[fieldKey] ?? "-")))].sort((a, b) => a.localeCompare(b, "tr"));
+                    const list = document.createElement("div");
+                    list.className = "pivot-filter-list";
+
+                    const values = getDimensionOptions(fieldKey);
+                    const selectedValues = getSelectedFilterValues(fieldKey);
+
+                    const allWrap = document.createElement("label");
+                    allWrap.className = "pivot-filter-option";
+                    const allCheckbox = document.createElement("input");
+                    allCheckbox.type = "checkbox";
+                    allCheckbox.checked = selectedValues === null;
+                    const allText = document.createElement("span");
+                    allText.textContent = "Tümü";
+                    allWrap.appendChild(allCheckbox);
+                    allWrap.appendChild(allText);
+                    list.appendChild(allWrap);
+
+                    const optionRows = [];
                     values.forEach(v => {
-                        const opt = document.createElement("option");
-                        opt.value = v;
-                        opt.textContent = v;
-                        if (state.filterValues[fieldKey] === v) {
-                            opt.selected = true;
-                        }
-                        select.appendChild(opt);
+                        const row = document.createElement("label");
+                        row.className = "pivot-filter-option";
+                        row.dataset.valueText = v.toLocaleLowerCase("tr-TR");
+
+                        const cb = document.createElement("input");
+                        cb.type = "checkbox";
+                        cb.value = v;
+                        cb.checked = selectedValues === null ? true : selectedValues.includes(v);
+
+                        const text = document.createElement("span");
+                        text.textContent = v;
+
+                        row.appendChild(cb);
+                        row.appendChild(text);
+                        list.appendChild(row);
+                        optionRows.push({ row, cb, value: v });
                     });
 
-                    select.addEventListener("change", () => {
-                        state.filterValues[fieldKey] = select.value;
+                    const refreshAllCheckbox = () => {
+                        const selectedCount = optionRows.filter(x => x.cb.checked).length;
+                        allCheckbox.checked = selectedCount === optionRows.length;
+                        allCheckbox.indeterminate = selectedCount > 0 && selectedCount < optionRows.length;
+                    };
+
+                    const applySelection = () => {
+                        const selected = optionRows.filter(x => x.cb.checked).map(x => x.value);
+                        if (selected.length === optionRows.length) {
+                            clearSelectedFilterValues(fieldKey);
+                        } else {
+                            setSelectedFilterValues(fieldKey, selected);
+                        }
+
+                        refreshAllCheckbox();
+                        kullaniciEtkilesiminiIsaretle();
                         buildPivot();
+                    };
+
+                    allCheckbox.addEventListener("change", () => {
+                        optionRows.forEach(x => {
+                            x.cb.checked = allCheckbox.checked;
+                        });
+                        applySelection();
+                    });
+
+                    optionRows.forEach(x => {
+                        x.cb.addEventListener("change", applySelection);
+                    });
+
+                    search.addEventListener("input", () => {
+                        const q = search.value.trim().toLocaleLowerCase("tr-TR");
+                        let visibleCount = 0;
+
+                        optionRows.forEach(x => {
+                            const visible = !q || x.row.dataset.valueText.includes(q);
+                            x.row.style.display = visible ? "flex" : "none";
+                            if (visible) {
+                                visibleCount += 1;
+                            }
+                        });
+
+                        let empty = list.querySelector(".pivot-filter-empty");
+                        if (!visibleCount) {
+                            if (!empty) {
+                                empty = document.createElement("div");
+                                empty.className = "pivot-filter-empty";
+                                empty.textContent = "Sonuç bulunamadı";
+                                list.appendChild(empty);
+                            }
+                        } else if (empty) {
+                            empty.remove();
+                        }
                     });
 
                     col.appendChild(label);
-                    col.appendChild(select);
+                    col.appendChild(search);
+                    col.appendChild(list);
                     filterInputs.appendChild(col);
                 });
             }
 
             function filterData() {
+                const activeFilterFields = [...new Set([...state.filters, ...state.rows, ...state.columns])];
                 return data.filter(row => {
-                    return state.filters.every(f => {
-                        const selected = state.filterValues[f];
-                        if (!selected) {
+                    return activeFilterFields.every(f => {
+                        const selected = getSelectedFilterValues(f);
+                        if (selected === null) {
                             return true;
                         }
-                        return String(row[f] ?? "-") === selected;
+                        if (!selected.length) {
+                            return false;
+                        }
+                        return selected.includes(String(row[f] ?? "-"));
                     });
                 });
             }
@@ -1703,6 +2238,353 @@
                     return ["-"];
                 }
                 return key.split(" || ");
+            }
+
+            function isDateField(fieldKey) {
+                return fieldKey === "TestTarihi" || fieldKey === "DizaynTarihi";
+            }
+
+            function tryParseDate(value) {
+                const text = String(value || "").trim();
+                if (!text || text === "-") {
+                    return null;
+                }
+
+                const t = Date.parse(text);
+                if (!Number.isNaN(t)) {
+                    return t;
+                }
+
+                return null;
+            }
+
+            function tryParseNumeric(value) {
+                const text = String(value ?? "").trim();
+                if (!text || text === "-") {
+                    return null;
+                }
+
+                const direct = Number(text);
+                if (Number.isFinite(direct)) {
+                    return direct;
+                }
+
+                let cleaned = text
+                    .replace(/\s+/g, "")
+                    .replace(/[^0-9,.-]/g, "");
+
+                if (!cleaned) {
+                    return null;
+                }
+
+                const lastComma = cleaned.lastIndexOf(",");
+                const lastDot = cleaned.lastIndexOf(".");
+
+                if (lastComma > lastDot) {
+                    cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+                } else if (lastDot > lastComma) {
+                    cleaned = cleaned.replace(/,/g, "");
+                }
+
+                const parsed = Number(cleaned);
+                return Number.isFinite(parsed) ? parsed : null;
+            }
+
+            function isNumericField(fieldKey) {
+                return fieldMeta[fieldKey]?.dataType === "number";
+            }
+
+            function compareValuesByField(a, b, fieldKey) {
+                if (isDateField(fieldKey)) {
+                    const da = tryParseDate(a);
+                    const db = tryParseDate(b);
+
+                    if (da === null && db === null) return 0;
+                    if (da === null) return 1;
+                    if (db === null) return -1;
+
+                    return db - da;
+                }
+
+                const na = tryParseNumeric(a);
+                const nb = tryParseNumeric(b);
+                if (isNumericField(fieldKey)) {
+                    if (na === null && nb === null) {
+                        return 0;
+                    }
+                    if (na === null) {
+                        return 1;
+                    }
+                    if (nb === null) {
+                        return -1;
+                    }
+
+                    return na - nb;
+                }
+
+                if (a == null && b == null) {
+                    return 0;
+                }
+                if (a == null || a === "") {
+                    return 1;
+                }
+                if (b == null || b === "") {
+                    return -1;
+                }
+
+                return String(a ?? "").localeCompare(String(b ?? ""), "tr");
+            }
+
+            function sortValuesByField(values, fieldKey) {
+                return [...values].sort((a, b) => compareValuesByField(a, b, fieldKey));
+            }
+
+            function getMasterDimensionOptions(fieldKey) {
+                const raw = masterDimensionValues && typeof masterDimensionValues === "object"
+                    ? masterDimensionValues[fieldKey]
+                    : null;
+
+                if (!Array.isArray(raw)) {
+                    return [];
+                }
+
+                return raw
+                    .map(v => String(v || "").trim())
+                    .filter(v => !!v);
+            }
+
+            function getDimensionOptions(fieldKey) {
+                const fromData = [...new Set(data.map(d => String(d[fieldKey] ?? "-")))];
+                const fromMaster = getMasterDimensionOptions(fieldKey);
+                const unique = [...new Set([...fromMaster, ...fromData])];
+                return sortValuesByField(unique, fieldKey);
+            }
+
+            function getSelectedFilterValues(fieldKey) {
+                if (!Object.prototype.hasOwnProperty.call(state.filterValues, fieldKey)) {
+                    return null;
+                }
+
+                const raw = state.filterValues[fieldKey];
+                if (!Array.isArray(raw)) {
+                    return null;
+                }
+                return raw
+                    .map(v => String(v ?? "").trim())
+                    .filter(v => !!v);
+            }
+
+            function setSelectedFilterValues(fieldKey, values) {
+                const normalized = Array.isArray(values)
+                    ? values.map(v => String(v ?? "").trim()).filter(v => !!v)
+                    : [];
+
+                state.filterValues[fieldKey] = [...new Set(normalized)];
+            }
+
+            function clearSelectedFilterValues(fieldKey) {
+                delete state.filterValues[fieldKey];
+            }
+
+            function closeDimensionPicker() {
+                if (activeDimensionPicker && activeDimensionPicker.parentElement) {
+                    activeDimensionPicker.remove();
+                }
+                activeDimensionPicker = null;
+            }
+
+            function openDimensionPicker(fieldKey, anchorElement) {
+                closeDimensionPicker();
+
+                const wrapper = document.createElement("div");
+                wrapper.className = "pivot-dim-combobox";
+
+                const title = document.createElement("div");
+                title.className = "pivot-dim-combobox__title";
+                title.textContent = `${fieldMeta[fieldKey].label} Seçimi`;
+
+                const search = document.createElement("input");
+                search.type = "search";
+                search.className = "pivot-filter-search";
+                search.placeholder = "Ara...";
+
+                const list = document.createElement("div");
+                list.className = "pivot-dim-combobox__list";
+
+                const values = getDimensionOptions(fieldKey);
+                const selectedValues = getSelectedFilterValues(fieldKey);
+
+                const allWrap = document.createElement("label");
+                allWrap.className = "pivot-filter-option";
+                const allCheckbox = document.createElement("input");
+                allCheckbox.type = "checkbox";
+                allCheckbox.checked = selectedValues === null;
+                const allText = document.createElement("span");
+                allText.textContent = "Tümü";
+                allWrap.appendChild(allCheckbox);
+                allWrap.appendChild(allText);
+                list.appendChild(allWrap);
+
+                const optionRows = [];
+                values.forEach(v => {
+                    const row = document.createElement("label");
+                    row.className = "pivot-filter-option";
+                    row.dataset.valueText = v.toLocaleLowerCase("tr-TR");
+
+                    const cb = document.createElement("input");
+                    cb.type = "checkbox";
+                    cb.value = v;
+                    cb.checked = selectedValues === null ? true : selectedValues.includes(v);
+
+                    const text = document.createElement("span");
+                    text.textContent = v;
+
+                    row.appendChild(cb);
+                    row.appendChild(text);
+                    list.appendChild(row);
+                    optionRows.push({ row, cb, value: v });
+                });
+
+                const refreshAllCheckbox = () => {
+                    const selectedCount = optionRows.filter(x => x.cb.checked).length;
+                    allCheckbox.checked = selectedCount === optionRows.length;
+                    allCheckbox.indeterminate = selectedCount > 0 && selectedCount < optionRows.length;
+                };
+
+                const applySelection = () => {
+                    const selected = optionRows.filter(x => x.cb.checked).map(x => x.value);
+                    if (selected.length === optionRows.length) {
+                        clearSelectedFilterValues(fieldKey);
+                    } else {
+                        setSelectedFilterValues(fieldKey, selected);
+                    }
+                    refreshAllCheckbox();
+                    kullaniciEtkilesiminiIsaretle();
+                    buildPivot();
+                };
+
+                allCheckbox.addEventListener("change", () => {
+                    optionRows.forEach(x => {
+                        x.cb.checked = allCheckbox.checked;
+                    });
+                    applySelection();
+                });
+
+                optionRows.forEach(x => {
+                    x.cb.addEventListener("change", applySelection);
+                });
+
+                search.addEventListener("input", () => {
+                    const q = search.value.trim().toLocaleLowerCase("tr-TR");
+                    let visibleCount = 0;
+
+                    optionRows.forEach(x => {
+                        const visible = !q || x.row.dataset.valueText.includes(q);
+                        x.row.style.display = visible ? "flex" : "none";
+                        if (visible) {
+                            visibleCount += 1;
+                        }
+                    });
+
+                    let empty = list.querySelector(".pivot-filter-empty");
+                    if (!visibleCount) {
+                        if (!empty) {
+                            empty = document.createElement("div");
+                            empty.className = "pivot-filter-empty";
+                            empty.textContent = "Sonuç bulunamadı";
+                            list.appendChild(empty);
+                        }
+                    } else if (empty) {
+                        empty.remove();
+                    }
+                });
+
+                wrapper.appendChild(title);
+                wrapper.appendChild(search);
+                wrapper.appendChild(list);
+                document.body.appendChild(wrapper);
+
+                const rect = anchorElement.getBoundingClientRect();
+                const left = Math.min(rect.left, window.innerWidth - wrapper.offsetWidth - 10);
+                const top = Math.min(rect.bottom + 8, window.innerHeight - wrapper.offsetHeight - 10);
+                wrapper.style.left = `${Math.max(8, left)}px`;
+                wrapper.style.top = `${Math.max(8, top)}px`;
+
+                activeDimensionPicker = wrapper;
+
+                const closeOnClick = (ev) => {
+                    if (!activeDimensionPicker) {
+                        return;
+                    }
+                    if (activeDimensionPicker.contains(ev.target) || anchorElement.contains(ev.target)) {
+                        return;
+                    }
+                    closeDimensionPicker();
+                    document.removeEventListener("mousedown", closeOnClick, true);
+                };
+
+                document.addEventListener("mousedown", closeOnClick, true);
+            }
+
+            function cartesianJoin(valuesByField) {
+                if (!valuesByField.length) {
+                    return ["__tek"];
+                }
+
+                let combos = [[]];
+                valuesByField.forEach(values => {
+                    if (!values.length) {
+                        combos = [];
+                        return;
+                    }
+                    const next = [];
+                    combos.forEach(prefix => {
+                        values.forEach(v => next.push([...prefix, v]));
+                    });
+                    combos = next;
+                });
+
+                return combos.map(parts => parts.join(" || "));
+            }
+
+            function getForcedAxisKeys(fields) {
+                if (!fields.length) {
+                    return ["__tek"];
+                }
+
+                const valuesByField = fields.map(fieldKey => {
+                    const selected = getSelectedFilterValues(fieldKey);
+                    if (selected === null) {
+                        return [];
+                    }
+                    return selected;
+                });
+
+                if (valuesByField.some(arr => !arr.length)) {
+                    return [];
+                }
+
+                return cartesianJoin(valuesByField);
+            }
+
+            function sortKeysByFields(keys, fields) {
+                if (!fields.length) {
+                    return [...keys];
+                }
+
+                return [...keys].sort((a, b) => {
+                    const labelsA = labelFromKey(a);
+                    const labelsB = labelFromKey(b);
+
+                    for (let i = 0; i < fields.length; i += 1) {
+                        const cmp = compareValuesByField(labelsA[i], labelsB[i], fields[i]);
+                        if (cmp !== 0) {
+                            return cmp;
+                        }
+                    }
+
+                    return 0;
+                });
             }
 
             function initAgg(agg) {
@@ -1756,38 +2638,96 @@
                 return `<div class=\"pivot-th-top\">${topText}</div><div class=\"pivot-th-main\">${safeMain}</div>`;
             }
 
+            function formatColumnHeaderText(columnKey) {
+                if (!state.columns.length) {
+                    return "";
+                }
+
+                const labels = labelFromKey(columnKey);
+                return labels
+                    .map((label, idx) => {
+                        const fieldKey = state.columns[idx];
+                        if (fieldKey === "GucKVA") {
+                            return `Güç ${label}`;
+                        }
+                        return label;
+                    })
+                    .join(" / ");
+            }
+
             function buildPivot() {
                 if (!state.rows.length || !state.values.length) {
                     table.innerHTML = "";
                     tableHolder.style.display = "none";
                     pivotKaydetBtn.style.display = "none";
                     emptyState.style.display = "block";
+                    
+                    let mesaj = "Analize başlamak için alanları kutucuklara yerleştirin";
+                    if (!state.rows.length && state.values.length) {
+                        mesaj = "⚠️ En az bir Satır alanı seçmelisiniz";
+                    } else if (state.rows.length && !state.values.length) {
+                        mesaj = "⚠️ En az bir Değer alanı seçmelisiniz";
+                    } else if (!state.rows.length && !state.values.length) {
+                        mesaj = "⚠️ Satır ve Değer alanları zorunludur";
+                    }
+                    
+                    emptyState.querySelector("h6").textContent = mesaj;
+                    console.warn("[Pivot] Boş pivot:", { rows: state.rows.length, values: state.values.length, mesaj });
+                    
                     state.chartModel = null;
+                    syncActiveChartIfVisible();
                     setView("table");
                     syncStageHeight();
+                    // Avoid persisting incomplete layouts (prevents accidental row resets).
                     return;
                 }
 
                 const filtered = filterData();
-                if (!filtered.length) {
+                const hasFilteredRows = filtered.length > 0;
+
+                if (!hasFilteredRows) {
+                    const hasAnyExplicitSelection = state.filters.some(f => getSelectedFilterValues(f) !== null);
+                    if (!hasAnyExplicitSelection) {
+                        table.innerHTML = "";
+                        tableHolder.style.display = "none";
+                        pivotKaydetBtn.style.display = "none";
+                        emptyState.style.display = "block";
+                        emptyState.querySelector("h6").textContent = "Seçili filtrelerle eşleşen kayıt bulunamadı";
+                        state.chartModel = null;
+                        syncActiveChartIfVisible();
+                        setView("table");
+                        syncStageHeight();
+                        return;
+                    }
+                }
+
+                emptyState.querySelector("h6").textContent = "Analize başlamak için alanları kutucuklara yerleştirin";
+                let rowKeys = hasFilteredRows
+                    ? sortKeysByFields([...new Set(filtered.map(r => keyFromFields(r, state.rows)))], state.rows)
+                    : getForcedAxisKeys(state.rows);
+
+                const colKeys = state.columns.length
+                    ? (hasFilteredRows
+                        ? sortKeysByFields([...new Set(filtered.map(r => keyFromFields(r, state.columns)))], state.columns)
+                        : getForcedAxisKeys(state.columns))
+                    : ["__tek"];
+
+                if (!rowKeys.length || !colKeys.length) {
                     table.innerHTML = "";
                     tableHolder.style.display = "none";
                     pivotKaydetBtn.style.display = "none";
                     emptyState.style.display = "block";
                     emptyState.querySelector("h6").textContent = "Seçili filtrelerle eşleşen kayıt bulunamadı";
                     state.chartModel = null;
+                    syncActiveChartIfVisible();
                     setView("table");
                     syncStageHeight();
                     return;
                 }
 
-                emptyState.querySelector("h6").textContent = "Analize başlamak için alanları kutucuklara yerleştirin";
-                const rowKeys = [...new Set(filtered.map(r => keyFromFields(r, state.rows)))].sort((a, b) => a.localeCompare(b, "tr"));
-                const colKeys = state.columns.length
-                    ? [...new Set(filtered.map(r => keyFromFields(r, state.columns)))].sort((a, b) => a.localeCompare(b, "tr"))
-                    : ["__tek"];
-
                 const matrix = new Map();
+                const comboRecords = new Map();
+                const columnTotals = new Map();
 
                 filtered.forEach(r => {
                     const rk = keyFromFields(r, state.rows);
@@ -1799,7 +2739,64 @@
                     }
                     const bucket = matrix.get(key);
                     state.values.forEach((v, i) => updateAgg(bucket[i], v.agg, r[v.key]));
+
+                    if (!columnTotals.has(ck)) {
+                        columnTotals.set(ck, state.values.map(v => initAgg(v.agg)));
+                    }
+
+                    const totalBucket = columnTotals.get(ck);
+                    state.values.forEach((v, i) => updateAgg(totalBucket[i], v.agg, r[v.key]));
+
+                    if (!comboRecords.has(key)) {
+                        comboRecords.set(key, []);
+                    }
+                    comboRecords.get(key).push(r);
                 });
+
+                if (state.values.length) {
+                    const rowVectorMap = new Map();
+                    const hasNumericAxisField = [...state.rows, ...state.columns].some(fieldKey => isNumericField(fieldKey));
+                    const hasDateAxisField = [...state.rows, ...state.columns].some(fieldKey => isDateField(fieldKey));
+
+                    rowKeys.forEach(rk => {
+                        const vector = [];
+
+                        colKeys.forEach(ck => {
+                            const comboKey = `${rk}##${ck}`;
+                            const combo = matrix.get(comboKey);
+
+                            state.values.forEach((v, i) => {
+                                const val = combo ? finishAgg(combo[i], v.agg) : 0;
+                                vector.push(Number.isFinite(Number(val)) ? Number(val) : 0);
+                            });
+                        });
+
+                        rowVectorMap.set(rk, vector);
+                    });
+
+                    if (!hasNumericAxisField && !hasDateAxisField) {
+                        rowKeys = [...rowKeys].sort((a, b) => {
+                            const vecA = rowVectorMap.get(a) || [];
+                            const vecB = rowVectorMap.get(b) || [];
+
+                            const totalA = vecA.reduce((sum, n) => sum + n, 0);
+                            const totalB = vecB.reduce((sum, n) => sum + n, 0);
+                            if (totalA !== totalB) {
+                                return totalA - totalB;
+                            }
+
+                            const nonZeroA = vecA.reduce((count, n) => count + (n > 0 ? 1 : 0), 0);
+                            const nonZeroB = vecB.reduce((count, n) => count + (n > 0 ? 1 : 0), 0);
+                            if (nonZeroA !== nonZeroB) {
+                                return nonZeroA - nonZeroB;
+                            }
+
+                            return a.localeCompare(b, "tr");
+                        });
+                    } else {
+                        rowKeys = sortKeysByFields(rowKeys, state.rows);
+                    }
+                }
 
                 const headRow = [];
                 const metricHeaders = [];
@@ -1807,7 +2804,7 @@
                     headRow.push(formatHeaderCell(fieldMeta[f].label));
                 });
                 colKeys.forEach(ck => {
-                    const colName = state.columns.length ? labelFromKey(ck).join(" / ") : "";
+                    const colName = formatColumnHeaderText(ck);
                     state.values.forEach(v => {
                         const metricText = valueLabel(v);
                         headRow.push(formatHeaderCell(metricText, colName));
@@ -1826,8 +2823,6 @@
                 });
                 html += "</tr></thead><tbody>";
 
-                const grandCollectors = state.values.map(v => initAgg(v.agg));
-
                 rowKeys.forEach(rk => {
                     const rowLabels = labelFromKey(rk);
                     chartModel.labels.push(rowLabels.join(" / "));
@@ -1842,10 +2837,22 @@
                         const combo = matrix.get(`${rk}##${ck}`) || state.values.map(v => initAgg(v.agg));
                         state.values.forEach((v, i) => {
                             const val = finishAgg(combo[i], v.agg);
-                            updateAgg(grandCollectors[i], v.agg, val);
                             chartModel.series[seriesIndex].data.push(Number(val));
                             seriesIndex += 1;
-                            html += `<td>${formatNumber(val)}</td>`;
+
+                            const matchedRows = comboRecords.get(`${rk}##${ck}`) || [];
+                            const recordIds = matchedRows
+                                .map(x => Number(x.Id))
+                                .filter(x => Number.isFinite(x) && x > 0);
+
+                            if (recordIds.length) {
+                                const rowText = rowLabels.join(" / ");
+                                const colText = state.columns.length ? labelFromKey(ck).join(" / ") : "-";
+                                const title = escapeHtml(`${rowText} | ${colText} | ${valueLabel(v)}`);
+                                html += `<td class='pivot-drill-cell' data-record-ids='${recordIds.join(",")}' data-drill-title='${title}' title='Çift tıkla: kayıtları görüntüle'>${formatNumber(val)}</td>`;
+                            } else {
+                                html += `<td>${formatNumber(val)}</td>`;
+                            }
                         });
                     });
 
@@ -1858,9 +2865,12 @@
 
                     const cellCount = colKeys.length * state.values.length;
                     for (let i = 0; i < cellCount; i++) {
+                        const colIdx = Math.floor(i / state.values.length);
+                        const ck = colKeys[colIdx];
                         const valIdx = i % state.values.length;
                         const v = state.values[valIdx];
-                        const totalVal = finishAgg(grandCollectors[valIdx], v.agg);
+                        const totalsForCol = columnTotals.get(ck) || state.values.map(x => initAgg(x.agg));
+                        const totalVal = finishAgg(totalsForCol[valIdx], v.agg);
                         html += `<td class='pivot-total-cell'>${formatNumber(totalVal)}</td>`;
                     }
 
@@ -1869,6 +2879,20 @@
 
                 html += "</tbody>";
                 table.innerHTML = html;
+
+                table.querySelectorAll("td.pivot-drill-cell").forEach(cell => {
+                    cell.addEventListener("dblclick", function () {
+                        const ids = this.dataset.recordIds || "";
+                        if (!ids) {
+                            return;
+                        }
+
+                        const title = this.dataset.drillTitle || "Pivot Hücre Detayı";
+                        const url = `/TrafoTests/PivotKayitlar?ids=${encodeURIComponent(ids)}&title=${encodeURIComponent(title)}`;
+                        window.open(url, "_blank");
+                    });
+                });
+
                 tableHolder.style.display = "block";
                 pivotKaydetBtn.style.display = "inline-flex";
                 emptyState.style.display = "none";
@@ -1881,6 +2905,8 @@
                 }
 
                 syncStageHeight();
+                pivotTaslakKaydet();
+                syncActiveChartIfVisible();
             }
 
             function applyDefaultSetup() {
@@ -1888,9 +2914,9 @@
                 state.columns = ["Muhendis"];
                 state.filters = ["Sonuc"];
                 state.values = [
-                    { key: "P0Sapma", agg: "avg" },
-                    { key: "PkSapma", agg: "avg" },
-                    { key: "UkSapma", agg: "avg" },
+                    { key: "P0SapmaHT", agg: "avg" },
+                    { key: "PkSapmaHT", agg: "avg" },
+                    { key: "UkSapmaHT", agg: "avg" },
                     { key: "Musteri", agg: "count" }
                 ];
                 state.filterValues = {};
@@ -1901,14 +2927,7 @@
 
             document.getElementById("filtreTemizleBtn").addEventListener("click", function () {
                 kayitliTabloOdakModuAyarla(false);
-                state.rows = [];
-                state.columns = [];
-                state.values = [];
-                state.filters = [];
-                state.filterValues = {};
-                renderZoneTags();
-                renderFilterInputs();
-                buildPivot();
+                pivotDurumunuSifirla();
             });
 
             kayitliTablolarBtn.addEventListener("click", async function () {
@@ -1981,14 +3000,14 @@
                             "X-Requested-With": "XMLHttpRequest"
                         },
                         body: JSON.stringify({
-                            tabloAdi: result.value.trim(),
-                            konfigJson: JSON.stringify(mevcutKonfigOlustur())
+                            TabloAdi: result.value.trim(),
+                            KonfigJson: JSON.stringify(mevcutKonfigOlustur())
                         })
                     });
 
-                    const payload = await response.json();
+                    const payload = await parseJsonResponseSafe(response);
                     if (!response.ok || !payload.success) {
-                        throw new Error(payload.message || "Kaydetme işlemi başarısız.");
+                        throw new Error(payload.message || `Kaydetme işlemi başarısız (${response.status}).`);
                     }
 
                     await Swal.fire({
@@ -1998,6 +3017,8 @@
                         timer: 1200,
                         showConfirmButton: false
                     });
+
+                    pivotDurumunuSifirla();
                 } catch (error) {
                     await Swal.fire({
                         icon: "error",
@@ -2007,10 +3028,74 @@
                 }
             });
 
+            if (pivotGuncelleBtn) {
+                pivotGuncelleBtn.addEventListener("click", async function () {
+                    try {
+                        if (!aktifKayitId || !Number.isFinite(Number(aktifKayitId))) {
+                            await Swal.fire({
+                                icon: "info",
+                                title: "Kayıt seçilmedi",
+                                text: "Güncelleme için önce Kayıtlı Tablolarım listesinden bir tablo açın."
+                            });
+                            return;
+                        }
+
+                        const response = await fetch("/TrafoTests/PivotTabloGuncelle", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-Requested-With": "XMLHttpRequest"
+                            },
+                            body: JSON.stringify({
+                                Id: Number(aktifKayitId),
+                                KonfigJson: JSON.stringify(mevcutKonfigOlustur())
+                            })
+                        });
+
+                        const payload = await parseJsonResponseSafe(response);
+                        if (!response.ok || !payload.success) {
+                            throw new Error(payload.message || `Güncelleme işlemi başarısız (${response.status}).`);
+                        }
+
+                        // Veritabanından güncel konfigürasyonu yükle
+                        const detayResponse = await fetch(`/TrafoTests/PivotTabloDetay?id=${aktifKayitId}`, {
+                            method: "GET",
+                            headers: { "X-Requested-With": "XMLHttpRequest" }
+                        });
+                        const detayPayload = await parseJsonResponseSafe(detayResponse);
+                        if (detayResponse.ok && detayPayload.success && detayPayload.data) {
+                            const konfigJson = detayPayload.data.konfigJson || detayPayload.data.KonfigJson;
+                            if (konfigJson) {
+                                const konfig = JSON.parse(konfigJson);
+                                konfigUygula(konfig);
+                                kullaniciElleDegisiklikYapti = false;
+                                pivotTaslakTemizle();
+                            }
+                        }
+
+                        await Swal.fire({
+                            icon: "success",
+                            title: "Başarılı",
+                            text: payload.message || "Değişiklikler başarıyla kaydedildi"
+                        });
+                        if (aktifKayitId) {
+                            kayitliTabloOdakModuAyarla(true);
+                        }
+                    } catch (error) {
+                        await Swal.fire({
+                            icon: "error",
+                            title: "Hata",
+                            text: error.message || "Güncelleme sırasında hata oluştu."
+                        });
+                    }
+                });
+            }
+
             document.getElementById("applyOzelBtn").addEventListener("click", function () {
                 state.options.showGrandTotals = document.getElementById("showGrandTotals").checked;
                 state.options.compactRows = document.getElementById("compactRows").checked;
                 state.options.decimalPlaces = Number(document.getElementById("decimalPlaces").value);
+                kullaniciEtkilesiminiIsaretle();
                 buildPivot();
 
                 const modalEl = document.getElementById("pivotOzelModal");
@@ -2069,7 +3154,62 @@
 
             renderFieldLists();
             setupDropZones();
+            setActivePivotAdi("");
             kayitliTablolarButonunuAyarla(false);
+
+            // Düzenle butonuna tıklandığında yeni sekmede aç
+            if (pivotDuzenleBtn) {
+                pivotDuzenleBtn.addEventListener("click", function () {
+                    if (!aktifKayitId) return;
+                    window.open(`/TrafoTests/Analiz?editPivot=${aktifKayitId}`, "_blank");
+                });
+            }
+
+            // URL'de editPivot/viewPivot parametresi varsa, ilgili tabloyu yükle
+            const yuklenecekPivotId = (Number.isFinite(editPivotId) && editPivotId > 0)
+                ? editPivotId
+                : ((Number.isFinite(viewPivotId) && viewPivotId > 0) ? viewPivotId : 0);
+
+            if (yuklenecekPivotId > 0) {
+                (async () => {
+                    try {
+                        console.log("[Pivot] Pivot tablosu yükleniyor (ID:", yuklenecekPivotId, ")");
+                        emptyState.style.display = "block";
+                        emptyState.querySelector("h6").textContent = "Tablo yükleniyor...";
+                        tableHolder.style.display = "none";
+                        pivotKaydetBtn.style.display = "none";
+
+                        const response = await fetch(`/TrafoTests/PivotTabloDetay?id=${yuklenecekPivotId}`, {
+                            method: "GET",
+                            headers: { "X-Requested-With": "XMLHttpRequest" }
+                        });
+                        const payload = await response.json();
+                        if (!response.ok || !payload.success) throw new Error(payload.message || "Kayıt yüklenemedi.");
+                        const konfigJson = (payload.data || {}).konfigJson || (payload.data || {}).KonfigJson;
+                        if (!konfigJson) throw new Error("Kayıtlı tablo içeriği bulunamadı.");
+                        if (kullaniciElleDegisiklikYapti) {
+                            console.log("[Pivot] Kullanıcı tarafından yapılan değişiklikler var, yükleme iptal edildi");
+                            return;
+                        }
+                        setActivePivotState(yuklenecekPivotId, (payload.data || {}).ad || (payload.data || {}).Ad || "");
+                        konfigUygula(JSON.parse(konfigJson));
+                        analizGorunumunuAc(true);
+                        console.log("[Pivot] Pivot tablosu başarıyla yüklendi");
+                    } catch (e) {
+                        console.error("[Pivot] Yükleme hatası:", e);
+                        emptyState.style.display = "block";
+                        emptyState.querySelector("h6").textContent = "Tablo yüklenemedi: " + (e.message || "Bilinmeyen hata");
+                        buildPivot();
+                    }
+                })();
+            } else if (forcePivotReset) {
+                // Preserve draft if present; reset signal should not unexpectedly wipe in-progress setup.
+                if (!pivotTaslakYukle()) {
+                    buildPivot();
+                }
+            } else if (!pivotTaslakYukle()) {
+                buildPivot();
+            }
             window.addEventListener("resize", syncStageHeight);
         });
     </script>
